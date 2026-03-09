@@ -6,13 +6,11 @@ tratamento de valores ausentes, remoção de duplicatas,
 codificação do target e divisão treino/teste.
 """
 
-import io
-
 import numpy as np
 import pandas as pd
 import pytest
 
-from src.preprocessing import DataPreprocessor, SCHEMA_MINIMO
+from src.preprocessing import DataPreprocessor
 
 
 # ── Fixtures locais ──────────────────────────────────────────────────────────

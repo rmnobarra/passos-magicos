@@ -6,17 +6,15 @@ gráficos (matriz de confusão, curva ROC, importância de features) e
 critério de confiabilidade para promoção à produção.
 """
 
-import json
 from pathlib import Path
 from typing import Any
 
 import matplotlib
 
 matplotlib.use("Agg")  # backend não-interativo; deve ser definido antes de pyplot
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from sklearn.metrics import (
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+from sklearn.metrics import (  # noqa: E402
     ConfusionMatrixDisplay,
     RocCurveDisplay,
     classification_report,
@@ -27,7 +25,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from src.utils import ensure_dir, get_logger
+from src.utils import ensure_dir, get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -239,9 +237,9 @@ class ModelEvaluator:
             f"  Recall classe positiva: {metrics.get('recall_positiva', 0):.4f}",
             "",
             "── Critérios de Produção ────────────────────────────",
-            f"  F1 macro >= 0.70      : {'OK' if metrics.get('f1_macro', 0) >= 0.70 else 'REPROVADO'}",
-            f"  ROC-AUC >= 0.75       : {'OK' if metrics.get('roc_auc', 0) >= 0.75 else 'REPROVADO'}",
-            f"  Recall positiva >= 0.65: {'OK' if metrics.get('recall_positiva', 0) >= 0.65 else 'REPROVADO'}",
+            f"  F1 macro >= 0.70      : {'OK' if metrics.get('f1_macro', 0) >= 0.70 else 'REPROVADO'}",  # noqa: E501
+            f"  ROC-AUC >= 0.75       : {'OK' if metrics.get('roc_auc', 0) >= 0.75 else 'REPROVADO'}",  # noqa: E501
+            f"  Recall positiva >= 0.65: {'OK' if metrics.get('recall_positiva', 0) >= 0.65 else 'REPROVADO'}",  # noqa: E501
             "",
             "── Matriz de Confusão ───────────────────────────────",
         ]

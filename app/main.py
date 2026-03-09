@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
     # Startup
     app.state.start_time = time.time()
     logger.info("API Passos Mágicos iniciada — versão 1.0.0")
-    logger.info(f"Documentação disponível em: /docs e /redoc")
+    logger.info("Documentação disponível em: /docs e /redoc")
 
     yield
 

@@ -5,7 +5,6 @@ Cobre: features compostas, temporais, de interação,
 seleção de features e o pipeline completo (transform).
 """
 
-import numpy as np
 import pandas as pd
 import pytest
 

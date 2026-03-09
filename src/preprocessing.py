@@ -12,7 +12,6 @@ automaticamente para o formato *long* (uma linha por aluno/ano).
 import re
 from typing import Optional, Tuple
 
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 

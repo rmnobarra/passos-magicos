@@ -7,7 +7,6 @@ serialização do modelo e filtragem de features.
 
 import os
 
-import numpy as np
 import pandas as pd
 import pytest
 from sklearn.pipeline import Pipeline

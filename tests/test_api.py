@@ -6,7 +6,6 @@ Usa httpx.AsyncClient com ASGITransport para testar os endpoints
 O modelo é mockado para isolamento total dos testes da API.
 """
 
-from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -351,7 +350,6 @@ async def test_predict_sem_modelo_retorna_503(client, monkeypatch, valid_api_pay
 def test_get_model_carrega_de_disco(monkeypatch, tmp_path):
     import joblib
     import app.routes as routes
-    from pathlib import Path
     from sklearn.dummy import DummyClassifier
 
     model_path = tmp_path / "model.joblib"

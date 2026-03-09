@@ -15,27 +15,26 @@ import sys
 # Garante que a raiz do projeto esteja no sys.path ao executar diretamente
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from datetime import datetime
-from typing import Optional
+from datetime import datetime  # noqa: E402
+from typing import Optional  # noqa: E402
 
-import numpy as np
-import pandas as pd
-from lightgbm import LGBMClassifier
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import (
+import pandas as pd  # noqa: E402
+from lightgbm import LGBMClassifier  # noqa: E402
+from sklearn.compose import ColumnTransformer  # noqa: E402
+from sklearn.ensemble import RandomForestClassifier  # noqa: E402
+from sklearn.model_selection import (  # noqa: E402
     RandomizedSearchCV,
     StratifiedKFold,
     cross_validate,
 )
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from xgboost import XGBClassifier
+from sklearn.pipeline import Pipeline  # noqa: E402
+from sklearn.preprocessing import OneHotEncoder, StandardScaler  # noqa: E402
+from xgboost import XGBClassifier  # noqa: E402
 
-from src.evaluate import ModelEvaluator
-from src.feature_engineering import FeatureEngineer
-from src.preprocessing import DataPreprocessor
-from src.utils import ensure_dir, get_logger, load_config, save_artifact
+from src.evaluate import ModelEvaluator  # noqa: E402
+from src.feature_engineering import FeatureEngineer  # noqa: E402
+from src.preprocessing import DataPreprocessor  # noqa: E402
+from src.utils import ensure_dir, get_logger, load_config, save_artifact  # noqa: E402
 
 logger = get_logger(__name__)
 
