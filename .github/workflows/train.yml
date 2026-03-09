@@ -1,0 +1,50 @@
+name: Retreinamento Agendado do Modelo
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # toda segunda-feira às 06:00 UTC
+  workflow_dispatch:        # permite disparo manual pelo GitHub UI
+    inputs:
+      data_path:
+        description: 'Caminho do CSV de dados'
+        required: false
+        default: 'data/raw/PEDE_PASSOS_DATASET_FIAP.csv'
+
+jobs:
+  retrain:
+    name: Retreinar e avaliar modelo
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Treinar modelo
+        run: |
+          DATA_PATH="${{ github.event.inputs.data_path || 'data/raw/PEDE_PASSOS_DATASET_FIAP.csv' }}"
+          python src/train.py --data "$DATA_PATH"
+
+      - name: Verificar qualidade do novo modelo
+        run: |
+          python -c "
+          import joblib, json
+          meta = joblib.load('app/model/metadata.joblib')
+          f1 = meta['metrics'].get('test_f1_macro', 0)
+          print(f'F1-Score: {f1:.4f}')
+          assert f1 >= 0.70, f'Modelo abaixo do limiar mínimo (F1={f1:.4f} < 0.70)'
+          print('✅ Modelo aprovado para deploy')
+          "
+
+      - name: Commit do novo modelo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/model/
+          git commit -m "chore: modelo retreinado em $(date +'%Y-%m-%d') [skip ci]" || echo "Sem alterações"
+          git push
