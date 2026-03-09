@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Dados (nunca versionar dados brutos)
+data/raw/
+data/processed/
+
+# Modelos serializados (grandes demais para git)
+app/model/*.joblib
+app/model/*.pkl
+
+# Variáveis de ambiente
+.env
+*.env
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Testes e cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Logs
+logs/
+*.log
+
+# Reports/Figuras geradas
+reports/figures/

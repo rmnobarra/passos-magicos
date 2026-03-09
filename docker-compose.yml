@@ -1,0 +1,71 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: passos-magicos-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api:
+    build:
+      context: .
+      target: production
+    container_name: passos-magicos-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/model:/app/app/model:ro   # modelo somente leitura
+      - ./logs:/app/logs                # logs persistentes
+      - ./data:/app/data:ro             # dados somente leitura
+    environment:
+      - APP_ENV=production
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  monitor:
+    build:
+      context: .
+      target: production
+    container_name: passos-magicos-monitor
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./logs:/app/logs:ro
+      - ./data:/app/data:ro
+      - ./app/model:/app/app/model:ro
+      - ./reports:/app/reports          # leitura e escrita de relatórios de drift
+    environment:
+      - APP_ENV=production
+      - API_URL=http://api:8000
+    command: ["streamlit", "run", "monitoring/dashboard.py",
+              "--server.port=8501", "--server.address=0.0.0.0",
+              "--server.headless=true"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+
+networks:
+  default:
+    name: passos-magicos-network

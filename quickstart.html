@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quickstart — Passos Mágicos com Claude Code</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161c2d;
+    --border: #1e2740;
+    --accent: #4f8ef7;
+    --accent2: #7c6af7;
+    --green: #3dd68c;
+    --yellow: #f5c542;
+    --red: #f76f6f;
+    --text: #e2e8f8;
+    --muted: #6b7a9e;
+    --code-bg: #0d1117;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0a0d14 0%, #0e1526 50%, #0a0d14 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 48px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 200px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(124,106,247,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .badge::before { content: '◆'; font-size: 8px; }
+  h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  h1 span { color: var(--accent); }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 560px;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .meta-item .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .dot-green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot-blue  { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .dot-purple{ background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+
+  /* LAYOUT */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 48px 80px; }
+
+  /* PREREQS */
+  .prereq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .prereq-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .prereq-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .prereq-info .name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .prereq-info .ver  { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* STEPS */
+  .section { margin-top: 56px; }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 0 20px;
+    margin-bottom: 8px;
+  }
+  .step:last-child .step-line { display: none; }
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .step-num.done { background: var(--green); border-color: var(--green); color: #000; }
+  .step-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    margin: 6px 0;
+    min-height: 24px;
+  }
+  .step-body {
+    padding-bottom: 32px;
+  }
+  .step-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding-top: 6px;
+  }
+  .step-desc {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.65;
+  }
+
+  /* CODE BLOCKS */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .copy-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c9d1e0;
+  }
+  .cmd   { color: #4f8ef7; }
+  .str   { color: #3dd68c; }
+  .cmt   { color: #4a5568; font-style: italic; }
+  .flag  { color: #f5c542; }
+  .path  { color: #7c6af7; }
+
+  /* PROMPT CARDS */
+  .prompt-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .prompt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    position: relative;
+  }
+  .prompt-card.phase-2 { border-left-color: var(--green); }
+  .prompt-card.phase-3 { border-left-color: var(--yellow); }
+  .prompt-card.phase-4 { border-left-color: var(--accent); }
+  .prompt-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .prompt-text {
+    font-size: 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.6;
+  }
+  .prompt-text .user-prefix { color: var(--accent); font-weight: 700; }
+
+  /* TIP BOX */
+  .tip {
+    background: rgba(79,142,247,0.07);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #8faee8;
+    display: flex;
+    gap: 10px;
+  }
+  .tip .icon { flex-shrink: 0; font-size: 16px; }
+  .warn {
+    background: rgba(245,197,66,0.07);
+    border: 1px solid rgba(245,197,66,0.2);
+    color: #c9a84c;
+  }
+  .ok {
+    background: rgba(61,214,140,0.07);
+    border: 1px solid rgba(61,214,140,0.2);
+    color: #3db87a;
+  }
+
+  /* FILE TREE */
+  .file-tree {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+  .ft-dir  { color: var(--accent); font-weight: 700; }
+  .ft-file { color: #c9d1e0; }
+  .ft-new  { color: var(--green); }
+  .ft-cmt  { color: #3a4460; font-size: 11px; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .check-box {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .check-box.done { background: var(--green); border-color: var(--green); color: #000; font-size: 11px; }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  footer strong { color: var(--accent); }
+
+  .inline-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 7px;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">Quickstart · Claude Code</div>
+  <h1>Construindo o Datathon<br><span>Passos Mágicos</span> com IA</h1>
+  <p class="hero-sub">Guia passo a passo para usar o Claude Code e construir um sistema MLOps completo — do dataset ao deploy com Docker.</p>
+  <div class="hero-meta">
+    <div class="meta-item"><span class="dot dot-green"></span> Python 3.11 + FastAPI</div>
+    <div class="meta-item"><span class="dot dot-blue"></span> scikit-learn + XGBoost</div>
+    <div class="meta-item"><span class="dot dot-purple"></span> Docker + Evidently</div>
+    <div class="meta-item"><span class="dot" style="background:#f76f6f;box-shadow:0 0 8px #f76f6f"></span> GitHub Actions CI/CD</div>
+    <div class="meta-item"><span class="dot" style="background:#46e3b7;box-shadow:0 0 8px #46e3b7"></span> Deploy na Render</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- PRÉ-REQUISITOS -->
+  <div class="section">
+    <div class="section-label">Antes de começar</div>
+    <div class="section-title">Pré-requisitos</div>
+    <div class="prereq-grid">
+      <div class="prereq-card">
+        <div class="prereq-icon">🖥️</div>
+        <div class="prereq-info">
+          <div class="name">Claude Code</div>
+          <div class="ver">npm i -g @anthropic-ai/claude-code</div>
+        </div>
+      </div>
+      <div class="prereq-card">
+        <div class="prereq-icon">🐍</div>
+        <div class="prereq-info">
+          <div class="name">Python</div>
+          <div class="ver">≥ 3.11</div>
+        </div>
+      </div>
+      <div class="prereq-card">
+        <div class="prereq-icon">🐳</div>
+        <div class="prereq-info">
+          <div class="name">Docker Desktop</div>
+          <div class="ver">≥ 24.x + Compose v2</div>
+        </div>
+      </div>
+      <div class="prereq-card">
+        <div class="prereq-icon">📦</div>
+        <div class="prereq-info">
+          <div class="name">Git</div>
+          <div class="ver">para versionar o projeto</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- FASE 0: SETUP -->
+  <div class="section">
+    <div class="section-label">Fase 0</div>
+    <div class="section-title">Setup do projeto</div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-num">1</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Criar a estrutura de diretórios</div>
+        <div class="step-desc">Crie a pasta do projeto e copie os arquivos gerados (CLAUDE.md, agents/, .claude/) para dentro dela.</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmd">mkdir</span> passos-magicos <span class="flag">&amp;&amp;</span> <span class="cmd">cd</span> passos-magicos
+
+<span class="cmt"># Copie os arquivos gerados pelo Claude para esta pasta:</span>
+<span class="cmt"># CLAUDE.md, agents/, .claude/</span>
+
+<span class="cmd">mkdir</span> <span class="flag">-p</span> app/model src tests monitoring \
+  data/raw data/processed notebooks \
+  logs reports/figures
+
+<span class="cmd">git</span> init
+<span class="cmd">git</span> add CLAUDE.md agents/ .claude/
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"chore: estrutura inicial e instruções Claude Code"</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-num">2</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Baixar o dataset</div>
+        <div class="step-desc">Faça download do dataset no Kaggle e coloque o CSV na pasta correta.</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmt"># Acesse: https://www.kaggle.com/datasets/filipiimperial/passos-magicos</span>
+<span class="cmt"># Baixe o arquivo e mova para:</span>
+<span class="cmd">mv</span> ~/Downloads/PEDE_PASSOS_DATASET_FIAP.csv data/raw/</pre>
+        </div>
+        <div class="tip warn">
+          <span class="icon">⚠️</span>
+          <span>Se não tiver acesso ao dataset ainda, não se preocupe — o Claude Code vai gerar dados sintéticos automaticamente para que você possa desenvolver e testar o projeto.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-num">3</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Criar ambiente virtual e iniciar o Claude Code</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmd">python</span> <span class="flag">-m</span> venv .venv
+<span class="cmd">source</span> .venv/bin/activate  <span class="cmt"># Linux/Mac</span>
+<span class="cmt"># .venv\Scripts\activate   # Windows</span>
+
+<span class="cmt"># Iniciar o Claude Code na raiz do projeto</span>
+<span class="cmd">claude</span></pre>
+        </div>
+        <div class="tip ok">
+          <span class="icon">✅</span>
+          <span>O Claude Code detecta o <span class="inline-code">CLAUDE.md</span> automaticamente e carrega todo o contexto do projeto. Você verá a confirmação no terminal.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 1: INFRA -->
+  <div class="section">
+    <div class="section-label">Fase 1</div>
+    <div class="section-title">Infraestrutura base</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Gerar requirements.txt, Dockerfile e docker-compose</div>
+        <div class="step-desc">Cole este prompt no Claude Code:</div>
+        <div class="prompt-grid">
+          <div class="prompt-card phase-4">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/devops_engineer.md e crie todos os arquivos sob responsabilidade desse agente: requirements.txt, Dockerfile, docker-compose.yml, .dockerignore, .gitignore e .env.example
+            </div>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="icon">💡</span>
+          <span>Após a criação, confira se o <span class="inline-code">requirements.txt</span> foi gerado corretamente antes de seguir.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">5</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Instalar dependências</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmd">pip</span> install <span class="flag">-r</span> requirements.txt</pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 2: PIPELINE ML -->
+  <div class="section">
+    <div class="section-label">Fase 2</div>
+    <div class="section-title">Pipeline de Machine Learning</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">6</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Criar os módulos de dados</div>
+        <div class="step-desc">Preprocessing, feature engineering e utilitários.</div>
+        <div class="prompt-grid">
+          <div class="prompt-card">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/data_engineer.md e crie os arquivos src/utils.py, src/preprocessing.py e src/feature_engineering.py exatamente conforme as especificações. Inclua type hints e docstrings em português em todas as funções.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">7</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Criar pipeline de treinamento e avaliação</div>
+        <div class="prompt-grid">
+          <div class="prompt-card phase-2">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/ml_engineer.md e crie src/train.py e src/evaluate.py. Certifique-se de que o script src/train.py possa ser executado diretamente via linha de comando com argumento --data para o caminho do CSV.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">8</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Treinar o modelo</div>
+        <div class="step-desc">Execute o treinamento — o Claude Code usará dados sintéticos se o CSV não estiver disponível.</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash · ou use o comando /train</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmt"># Com o dataset real:</span>
+<span class="cmd">python</span> src/train.py <span class="flag">--data</span> data/raw/PEDE_PASSOS_DATASET_FIAP.csv
+
+<span class="cmt"># Ou peça ao Claude Code para gerar dados e treinar:</span></pre>
+        </div>
+        <div class="prompt-grid">
+          <div class="prompt-card phase-2">
+            <div class="prompt-tag">prompt → claude code (alternativo)</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Gere um dataset sintético com 500 registros no schema Passos Mágicos em data/raw/synthetic_data.csv e execute o treinamento. Salve o modelo em app/model/model.joblib e mostre as métricas.
+            </div>
+          </div>
+        </div>
+        <div class="tip ok">
+          <span class="icon">✅</span>
+          <span>Resultado esperado: F1-Score Macro ≥ 0.70 e arquivo <span class="inline-code">app/model/model.joblib</span> criado.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 3: API -->
+  <div class="section">
+    <div class="section-label">Fase 3</div>
+    <div class="section-title">API FastAPI</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">9</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Criar a API completa</div>
+        <div class="prompt-grid">
+          <div class="prompt-card phase-3">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/api_engineer.md e crie app/schemas.py, app/routes.py, app/middleware.py e app/main.py. A API deve ter os endpoints /predict, /health e /metrics com documentação Swagger automática.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">10</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Testar a API localmente</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmt"># Terminal 1 — subir a API</span>
+<span class="cmd">uvicorn</span> app.main:app <span class="flag">--reload</span> <span class="flag">--port</span> 8000
+
+<span class="cmt"># Terminal 2 — testar health</span>
+<span class="cmd">curl</span> <span class="flag">-s</span> http://localhost:8000/api/v1/health | python <span class="flag">-m</span> json.tool
+
+<span class="cmt"># Terminal 2 — testar predição</span>
+<span class="cmd">curl</span> <span class="flag">-X</span> POST http://localhost:8000/api/v1/predict \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"inde":4.2,"ian":3.8,"ida":4.5,"ieg":5.0,
+      "iaa":6.0,"ips":5.5,"ipp":5.2,"ipv":4.8,
+      "fase":2,"ano":2024,"ponto_de_virada":false}'</span></pre>
+        </div>
+        <div class="tip">
+          <span class="icon">🌐</span>
+          <span>Swagger UI disponível em <strong>http://localhost:8000/docs</strong> para testar visualmente todos os endpoints.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 4: TESTES -->
+  <div class="section">
+    <div class="section-label">Fase 4</div>
+    <div class="section-title">Testes unitários</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">11</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Gerar todos os testes unitários</div>
+        <div class="prompt-grid">
+          <div class="prompt-card phase-4">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/qa_engineer.md e crie tests/conftest.py, tests/test_preprocessing.py, tests/test_feature_engineering.py, tests/test_train.py, tests/test_evaluate.py e tests/test_api.py. Use fixtures do conftest para dados sintéticos e garanta cobertura ≥ 80%.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">12</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Executar os testes e verificar cobertura</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash · ou use o comando /test</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmd">pytest</span> tests/ \
+  <span class="flag">--cov=src</span> \
+  <span class="flag">--cov=app</span> \
+  <span class="flag">--cov-report=term-missing</span> \
+  <span class="flag">--cov-fail-under=80</span> \
+  <span class="flag">-v</span></pre>
+        </div>
+        <div class="tip warn">
+          <span class="icon">⚠️</span>
+          <span>Se a cobertura ficar abaixo de 80%, peça ao Claude Code: <em>"Cobertura atual é X%. Adicione testes para aumentar a cobertura do módulo src/preprocessing.py"</em></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 5: MONITORAMENTO -->
+  <div class="section">
+    <div class="section-label">Fase 5</div>
+    <div class="section-title">Monitoramento e drift</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">13</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Criar o detector de drift e dashboard</div>
+        <div class="prompt-grid">
+          <div class="prompt-card">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/qa_engineer.md e crie monitoring/drift_detector.py e monitoring/dashboard.py conforme especificado. O dashboard deve exibir KPIs de predições e permitir baixar o relatório de drift mais recente.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 6: DOCKER -->
+  <div class="section">
+    <div class="section-label">Fase 6</div>
+    <div class="section-title">Deploy com Docker</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">14</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Build e deploy completo</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash · ou use o comando /deploy</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmt"># Subir API + Monitor com Docker Compose</span>
+<span class="cmd">docker-compose</span> up <span class="flag">--build</span> <span class="flag">-d</span>
+
+<span class="cmt"># Verificar containers rodando</span>
+<span class="cmd">docker-compose</span> ps
+
+<span class="cmt"># Ver logs em tempo real</span>
+<span class="cmd">docker-compose</span> logs <span class="flag">-f</span> api</pre>
+        </div>
+        <div class="tip ok">
+          <span class="icon">🚀</span>
+          <span>API em <strong>http://localhost:8000/docs</strong> · Dashboard em <strong>http://localhost:8501</strong></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 7: GITHUB ACTIONS -->
+  <div class="section">
+    <div class="section-label">Fase 7</div>
+    <div class="section-title">CI/CD com GitHub Actions</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">15</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Criar repositório e fazer o primeiro push</div>
+        <div class="step-desc">O GitHub Actions só funciona após o código estar no repositório remoto.</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="cmt"># Criar repositório no GitHub (via gh CLI ou interface web)</span>
+<span class="cmd">gh</span> repo create passos-magicos <span class="flag">--private</span> <span class="flag">--source=.</span> <span class="flag">--push</span>
+
+<span class="cmt"># Ou manualmente:</span>
+<span class="cmd">git</span> remote add origin https://github.com/SEU_USER/passos-magicos.git
+<span class="cmd">git</span> add . <span class="flag">&amp;&amp;</span> <span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"feat: projeto completo MLOps Passos Mágicos"</span>
+<span class="cmd">git</span> push <span class="flag">-u</span> origin main</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">16</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Gerar os workflows de CI e CD</div>
+        <div class="prompt-grid">
+          <div class="prompt-card" style="border-left-color:#f76f6f">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/github_actions_engineer.md e crie os três workflows: .github/workflows/ci.yml (lint + test + docker build), .github/workflows/cd.yml (deploy na Render via API) e .github/workflows/train.yml (retreinamento agendado). Crie também o .github/pull_request_template.md.
+            </div>
+          </div>
+        </div>
+        <div class="tip ok">
+          <span class="icon">✅</span>
+          <span>O CI dispara em todo push e PR. O CD dispara apenas em push para <span class="inline-code">main</span> — após o CI passar.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">17</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Configurar os secrets no GitHub</div>
+        <div class="step-desc">Acesse <strong>Settings → Secrets and variables → Actions</strong> no seu repositório e adicione:</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">github secrets</span></div>
+          <pre><span class="str">RENDER_API_KEY</span>       <span class="cmt">← Render → Account Settings → API Keys</span>
+<span class="str">RENDER_SERVICE_ID</span>    <span class="cmt">← URL do serviço: srv-XXXXXXXXXXXX</span>
+<span class="str">RENDER_SERVICE_URL</span>   <span class="cmt">← https://passos-magicos-api.onrender.com</span></pre>
+        </div>
+        <div class="tip warn">
+          <span class="icon">⚠️</span>
+          <span>Os secrets só podem ser configurados depois que o serviço na Render for criado (próxima fase). Volte aqui após a Fase 8.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 8: RENDER -->
+  <div class="section">
+    <div class="section-label">Fase 8</div>
+    <div class="section-title">Deploy na Render</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">18</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Gerar render.yaml e startup script</div>
+        <div class="prompt-grid">
+          <div class="prompt-card" style="border-left-color:#46e3b7">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Leia o arquivo agents/render_engineer.md e crie o render.yaml na raiz do projeto e o app/render_startup.sh. Atualize o Dockerfile para usar o startup script como CMD. O script deve treinar o modelo automaticamente se o disco persistente estiver vazio.
+            </div>
+          </div>
+        </div>
+        <div class="tip">
+          <span class="icon">💡</span>
+          <span>O <span class="inline-code">render.yaml</span> define toda a infraestrutura como código: serviço, disco persistente de 1 GB para o modelo, health check e auto-deploy.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">19</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Criar o serviço na Render e validar o deploy</div>
+        <div class="step-desc">Com o <span class="inline-code">render.yaml</span> no repositório, crie o serviço via Blueprint:</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">render · passo a passo</span></div>
+          <pre><span class="str">1.</span> Acesse https://render.com → <span class="flag">New +</span> → <span class="flag">Blueprint</span>
+<span class="str">2.</span> Conecte o repositório GitHub passos-magicos
+<span class="str">3.</span> Render lê o render.yaml e cria o serviço automaticamente
+<span class="str">4.</span> Aguarde o primeiro build (≈ 5–10 min, inclui treino do modelo)
+<span class="str">5.</span> Copie a URL pública e o Service ID para os secrets do GitHub</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash · validar API em produção</span><button class="copy-btn" onclick="copyCode(this)">copiar</button></div>
+          <pre><span class="str">SERVICE_URL</span>=<span class="str">"https://passos-magicos-api.onrender.com"</span>
+
+<span class="cmt"># Health check</span>
+<span class="cmd">curl</span> <span class="flag">-s</span> <span class="str">"$SERVICE_URL/api/v1/health"</span> | python <span class="flag">-m</span> json.tool
+
+<span class="cmt"># Predição de alto risco</span>
+<span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="str">"$SERVICE_URL/api/v1/predict"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"inde":3.8,"ian":3.5,"ida":4.0,"ieg":4.5,
+      "iaa":5.0,"ips":4.2,"ipp":4.8,"ipv":3.9,
+      "fase":2,"ano":2024,"ponto_de_virada":false}'</span></pre>
+        </div>
+        <div class="tip ok">
+          <span class="icon">🚀</span>
+          <span>Swagger público em <strong>https://passos-magicos-api.onrender.com/docs</strong> — inclua esse link no README e no vídeo do datathon.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- FASE 9: README -->
+  <div class="section">
+    <div class="section-label">Fase 9</div>
+    <div class="section-title">Documentação final</div>
+
+    <div class="step">
+      <div class="step-left"><div class="step-num">20</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Gerar o README.md completo</div>
+        <div class="prompt-grid">
+          <div class="prompt-card phase-2">
+            <div class="prompt-tag">prompt → claude code</div>
+            <div class="prompt-text">
+              <span class="user-prefix">&gt; </span>Crie um README.md completo para o projeto Passos Mágicos seguindo os requisitos do CLAUDE.md. Inclua: visão geral, estrutura de diretórios, instruções de deploy (local, Docker e Render), exemplos de chamadas cURL, explicação da pipeline de ML, justificativa das métricas e escolha do modelo, badges de Python, Docker, pytest e status do CI/CD.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <!-- CHECKLIST FINAL -->
+  <div class="section">
+    <div class="section-label">Entrega</div>
+    <div class="section-title">Checklist final</div>
+    <ul class="checklist">
+      <li><div class="check-box done">✓</div> Pipeline de treinamento completa (src/train.py)</li>
+      <li><div class="check-box done">✓</div> Modelo serializado em app/model/model.joblib</li>
+      <li><div class="check-box done">✓</div> API FastAPI com /predict, /health, /metrics</li>
+      <li><div class="check-box done">✓</div> Código modularizado em src/ (preprocessing, feature_engineering, train, evaluate, utils)</li>
+      <li><div class="check-box done">✓</div> Testes unitários com ≥ 80% de cobertura</li>
+      <li><div class="check-box done">✓</div> Dockerfile funcional + docker-compose.yml</li>
+      <li><div class="check-box done">✓</div> Monitoramento com logs e dashboard de drift</li>
+      <li><div class="check-box done">✓</div> GitHub Actions CI (lint + test + docker build)</li>
+      <li><div class="check-box done">✓</div> GitHub Actions CD (deploy automático na Render)</li>
+      <li><div class="check-box done">✓</div> render.yaml + startup script configurados</li>
+      <li><div class="check-box done">✓</div> API pública acessível na Render</li>
+      <li><div class="check-box done">✓</div> README.md com todas as seções exigidas</li>
+      <li><div class="check-box done">✓</div> API testada via cURL e documentada no README</li>
+      <li><div class="check-box"></div> Repositório GitHub organizado e documentado</li>
+      <li><div class="check-box"></div> Vídeo de até 5 minutos (formato gerencial)</li>
+    </ul>
+  </div>
+
+  <hr>
+
+  <!-- ESTRUTURA FINAL -->
+  <div class="section">
+    <div class="section-label">Resultado esperado</div>
+    <div class="section-title">Estrutura do projeto ao final</div>
+    <div class="file-tree">
+<span class="ft-dir">passos-magicos/</span>
+├── <span class="ft-dir">.github/</span>
+│   ├── <span class="ft-dir">workflows/</span>
+│   │   ├── <span class="ft-new">ci.yml</span>          <span class="ft-cmt">← lint + test + docker build</span>
+│   │   ├── <span class="ft-new">cd.yml</span>          <span class="ft-cmt">← deploy automático na Render</span>
+│   │   └── <span class="ft-new">train.yml</span>       <span class="ft-cmt">← retreinamento agendado</span>
+│   └── <span class="ft-new">pull_request_template.md</span>
+├── <span class="ft-dir">app/</span>
+│   ├── <span class="ft-new">main.py</span>
+│   ├── <span class="ft-new">routes.py</span>
+│   ├── <span class="ft-new">schemas.py</span>
+│   ├── <span class="ft-new">render_startup.sh</span>  <span class="ft-cmt">← treina modelo no 1º boot</span>
+│   └── <span class="ft-dir">model/</span>
+│       └── <span class="ft-new">model.joblib</span>
+├── <span class="ft-dir">src/</span>
+│   ├── <span class="ft-new">preprocessing.py</span>
+│   ├── <span class="ft-new">feature_engineering.py</span>
+│   ├── <span class="ft-new">train.py</span>
+│   ├── <span class="ft-new">evaluate.py</span>
+│   └── <span class="ft-new">utils.py</span>
+├── <span class="ft-dir">tests/</span>
+│   ├── <span class="ft-new">conftest.py</span>
+│   ├── <span class="ft-new">test_preprocessing.py</span>
+│   ├── <span class="ft-new">test_feature_engineering.py</span>
+│   ├── <span class="ft-new">test_train.py</span>
+│   ├── <span class="ft-new">test_evaluate.py</span>
+│   └── <span class="ft-new">test_api.py</span>
+├── <span class="ft-dir">monitoring/</span>
+│   ├── <span class="ft-new">drift_detector.py</span>
+│   └── <span class="ft-new">dashboard.py</span>
+├── <span class="ft-dir">agents/</span>             <span class="ft-cmt">← 7 sub-agentes especializados</span>
+├── <span class="ft-dir">.claude/commands/</span>  <span class="ft-cmt">← /train /test /deploy /monitor</span>
+├── <span class="ft-new">render.yaml</span>         <span class="ft-cmt">← IaC da Render (Blueprint)</span>
+├── <span class="ft-new">Dockerfile</span>
+├── <span class="ft-new">docker-compose.yml</span>
+├── <span class="ft-new">requirements.txt</span>
+├── <span class="ft-new">CLAUDE.md</span>
+└── <span class="ft-new">README.md</span>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Datathon · <strong>Passos Mágicos</strong> · PósTech FIAP · MLOps End-to-End · CI/CD → Render
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copiado!';
+      btn.style.color = '#3dd68c';
+      btn.style.borderColor = '#3dd68c';
+      setTimeout(() => {
+        btn.textContent = 'copiar';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>

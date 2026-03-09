@@ -1,0 +1,33 @@
+=======================================================
+RELATÓRIO DE AVALIAÇÃO — Passos Mágicos
+=======================================================
+
+── Métricas Principais ──────────────────────────────
+  F1 macro              : 0.9846
+  F1 weighted           : 0.9890
+  ROC-AUC               : 0.9995
+  Precision macro       : 0.9862
+  Recall macro          : 0.9830
+  Recall classe positiva: 0.9717
+
+── Critérios de Produção ────────────────────────────
+  F1 macro >= 0.70      : OK
+  ROC-AUC >= 0.75       : OK
+  Recall positiva >= 0.65: OK
+
+── Matriz de Confusão ───────────────────────────────
+                        Pred 0   Pred 1
+  Real 0                 347        2
+  Real 1                   3      103
+
+── Relatório por Classe (sklearn) ───────────────────
+                precision    recall  f1-score   support
+  
+             0       0.99      0.99      0.99       349
+             1       0.98      0.97      0.98       106
+  
+      accuracy                           0.99       455
+     macro avg       0.99      0.98      0.98       455
+  weighted avg       0.99      0.99      0.99       455
+
+=======================================================
