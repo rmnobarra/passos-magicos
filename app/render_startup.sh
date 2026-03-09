@@ -34,7 +34,7 @@ df = pd.DataFrame({
 })
 df['DEFASAGEM'] = ((df['INDE'] < 5.0) | (df['IAN'] < 5.0)).astype(int)
 os.makedirs('data/raw', exist_ok=True)
-df.to_csv('data/raw/synthetic_data.csv', index=False)
+df.to_csv('data/raw/synthetic_data.csv', index=False, sep=';')
 print(f'Dataset sintético: {n} registros')
 "
 
