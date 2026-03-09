@@ -41,10 +41,21 @@ logger = get_logger(__name__)
 
 # Features numéricas candidatas para o modelo
 NUMERICAL_FEATURES_CANDIDATAS: list[str] = [
-    "INDE", "IAN", "IDA", "IEG", "IAA", "IPS", "IPP", "IPV",
-    "INDICE_BEMESTAR", "INDICE_PERFORMANCE", "GAP_AUTO_REAL",
-    "ABAIXO_MEDIA_GERAL", "EVOLUCAO_INDE",
-    "INDE_x_FASE", "BEMESTAR_x_PERFORMANCE",
+    "INDE",
+    "IAN",
+    "IDA",
+    "IEG",
+    "IAA",
+    "IPS",
+    "IPP",
+    "IPV",
+    "INDICE_BEMESTAR",
+    "INDICE_PERFORMANCE",
+    "GAP_AUTO_REAL",
+    "ABAIXO_MEDIA_GERAL",
+    "EVOLUCAO_INDE",
+    "INDE_x_FASE",
+    "BEMESTAR_x_PERFORMANCE",
     "ANO",
 ]
 
@@ -72,7 +83,9 @@ class ModelTrainer:
         """
         self.config = config
         self.model_path: str = config.get("model_path", "app/model/model.joblib")
-        self.metadata_path: str = config.get("metadata_path", "app/model/metadata.joblib")
+        self.metadata_path: str = config.get(
+            "metadata_path", "app/model/metadata.joblib"
+        )
         self.numerical_features: list[str] = []
         self.categorical_features: list[str] = []
         self.feature_names: list[str] = []
@@ -95,8 +108,12 @@ class ModelTrainer:
         ]
         self.feature_names = self.numerical_features + self.categorical_features
 
-        logger.info(f"Features numéricas ({len(self.numerical_features)}): {self.numerical_features}")
-        logger.info(f"Features categóricas ({len(self.categorical_features)}): {self.categorical_features}")
+        logger.info(
+            f"Features numéricas ({len(self.numerical_features)}): {self.numerical_features}"
+        )
+        logger.info(
+            f"Features categóricas ({len(self.categorical_features)}): {self.categorical_features}"
+        )
 
     def build_pipeline(self, classifier=None) -> Pipeline:
         """
@@ -129,18 +146,22 @@ class ModelTrainer:
         if self.numerical_features:
             transformers.append(("num", StandardScaler(), self.numerical_features))
         if self.categorical_features:
-            transformers.append((
-                "cat",
-                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
-                self.categorical_features,
-            ))
+            transformers.append(
+                (
+                    "cat",
+                    OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                    self.categorical_features,
+                )
+            )
 
         preprocessor = ColumnTransformer(transformers=transformers, remainder="drop")
 
-        return Pipeline([
-            ("preprocessor", preprocessor),
-            ("classifier", classifier),
-        ])
+        return Pipeline(
+            [
+                ("preprocessor", preprocessor),
+                ("classifier", classifier),
+            ]
+        )
 
     def train(self, X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:
         """
@@ -450,9 +471,7 @@ class ModelTrainer:
         avaliador.plot_confusion_matrix(
             y_test, y_pred, "reports/figures/confusion_matrix.png"
         )
-        avaliador.plot_roc_curve(
-            y_test, y_proba, "reports/figures/roc_curve.png"
-        )
+        avaliador.plot_roc_curve(y_test, y_proba, "reports/figures/roc_curve.png")
         if hasattr(best_clf, "feature_importances_"):
             # Obter nomes das features pós-encoding (ColumnTransformer expande categóricas)
             try:
@@ -468,10 +487,16 @@ class ModelTrainer:
             )
 
         ensure_dir("reports")
-        report_path = avaliador.generate_report(metrics, "reports/evaluation_report.txt")
+        report_path = avaliador.generate_report(
+            metrics, "reports/evaluation_report.txt"
+        )
 
         confiavel = avaliador.is_model_reliable(metrics)
-        status = "APROVADO para produção" if confiavel else "REPROVADO — métricas abaixo do mínimo"
+        status = (
+            "APROVADO para produção"
+            if confiavel
+            else "REPROVADO — métricas abaixo do mínimo"
+        )
         logger.info(f"Confiabilidade do modelo: {status}")
 
         # ── 7. Serializar modelo e metadados ────────────────────────────

@@ -17,12 +17,14 @@ from src.train import ModelTrainer
 
 # ── Fixtures locais ──────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def trainer() -> ModelTrainer:
     return ModelTrainer(config={})
 
 
 # ── _filter_features ─────────────────────────────────────────────────────────
+
 
 def test_filter_features_identifica_numericas(trainer, trainer_with_data):
     _, X, _ = trainer_with_data
@@ -54,6 +56,7 @@ def test_filter_features_ignora_colunas_ausentes(trainer):
 
 # ── build_pipeline ────────────────────────────────────────────────────────────
 
+
 def test_build_pipeline_retorna_pipeline(trainer, trainer_with_data):
     _, X, _ = trainer_with_data
     trainer._filter_features(X)
@@ -77,6 +80,7 @@ def test_build_pipeline_tem_classifier(trainer, trainer_with_data):
 
 def test_build_pipeline_aceita_classificador_customizado(trainer, trainer_with_data):
     from sklearn.ensemble import RandomForestClassifier
+
     _, X, _ = trainer_with_data
     trainer._filter_features(X)
     clf = RandomForestClassifier(n_estimators=5, random_state=42)
@@ -85,6 +89,7 @@ def test_build_pipeline_aceita_classificador_customizado(trainer, trainer_with_d
 
 
 # ── train ─────────────────────────────────────────────────────────────────────
+
 
 def test_train_retorna_pipeline_treinado(trainer, trainer_with_data):
     _, X, y = trainer_with_data
@@ -122,6 +127,7 @@ def test_train_numero_predicoes_igual_amostras(trainer, trainer_with_data):
 
 # ── cross_validate ────────────────────────────────────────────────────────────
 
+
 def test_cross_validate_retorna_chaves_esperadas(trainer, trainer_with_data):
     _, X, y = trainer_with_data
     trainer._filter_features(X)
@@ -146,13 +152,16 @@ def test_cross_validate_roc_auc_entre_0_e_1(trainer, trainer_with_data):
 
 # ── save_model ────────────────────────────────────────────────────────────────
 
+
 def test_save_model_cria_arquivo_joblib(trainer, trained_pipeline, tmp_path):
     path = str(tmp_path / "modelo_teste.joblib")
     trainer.save_model(trained_pipeline, path)
     assert os.path.exists(path)
 
 
-def test_save_model_com_metadata_cria_dois_arquivos(trainer, trained_pipeline, tmp_path):
+def test_save_model_com_metadata_cria_dois_arquivos(
+    trainer, trained_pipeline, tmp_path
+):
     model_path = str(tmp_path / "model.joblib")
     meta_path = str(tmp_path / "meta.joblib")
     trainer.metadata_path = meta_path
@@ -163,6 +172,7 @@ def test_save_model_com_metadata_cria_dois_arquivos(trainer, trained_pipeline, t
 
 def test_save_model_artefato_carregavel(trainer, trained_pipeline, tmp_path):
     import joblib
+
     path = str(tmp_path / "model.joblib")
     trainer.save_model(trained_pipeline, path)
     loaded = joblib.load(path)

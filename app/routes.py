@@ -53,6 +53,7 @@ _redis: Optional[redis_lib.Redis] = None
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def get_redis() -> Optional[redis_lib.Redis]:
     """
     Retorna cliente Redis com conexão lazy e cache em módulo.
@@ -162,7 +163,7 @@ def _build_input_df(request: PredictionRequest, metadata: dict) -> pd.DataFrame:
     ips = request.ips
     ipp = request.ipp
     ipv = request.ipv
-    fase = float(request.fase)   # OHE foi treinado com float
+    fase = float(request.fase)  # OHE foi treinado com float
     ano = request.ano
 
     indice_bemestar = (ips + ipp + ipv) / 3
@@ -244,6 +245,7 @@ def _ler_metricas_do_log() -> dict:
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
+
 
 @router.post(
     "/predict",

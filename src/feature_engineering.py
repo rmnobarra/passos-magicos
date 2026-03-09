@@ -23,7 +23,16 @@ TODOS_INDICADORES: list[str] = ["IAN", "IDA", "IEG", "IAA", "IPS", "IPP", "IPV"]
 
 # Features numéricas base para o modelo
 FEATURES_BASE: list[str] = [
-    "INDE", "IAN", "IDA", "IEG", "IAA", "IPS", "IPP", "IPV", "FASE", "ANO",
+    "INDE",
+    "IAN",
+    "IDA",
+    "IEG",
+    "IAA",
+    "IPS",
+    "IPP",
+    "IPV",
+    "FASE",
+    "ANO",
 ]
 
 
@@ -62,10 +71,14 @@ class FeatureEngineer:
             logger.info(f"Feature INDICE_BEMESTAR criada com colunas: {cols_bemestar}")
 
         # Índice de performance acadêmica
-        cols_performance = [c for c in INDICADORES_PERFORMANCE if c in resultado.columns]
+        cols_performance = [
+            c for c in INDICADORES_PERFORMANCE if c in resultado.columns
+        ]
         if cols_performance:
             resultado["INDICE_PERFORMANCE"] = resultado[cols_performance].mean(axis=1)
-            logger.info(f"Feature INDICE_PERFORMANCE criada com colunas: {cols_performance}")
+            logger.info(
+                f"Feature INDICE_PERFORMANCE criada com colunas: {cols_performance}"
+            )
 
         # Gap entre autoavaliação e desempenho real
         if "IAA" in resultado.columns and "IDA" in resultado.columns:
@@ -77,8 +90,8 @@ class FeatureEngineer:
         if cols_indicadores:
             medianas = resultado[cols_indicadores].median()
             resultado["ABAIXO_MEDIA_GERAL"] = (
-                resultado[cols_indicadores] < medianas
-            ).all(axis=1).astype(int)
+                (resultado[cols_indicadores] < medianas).all(axis=1).astype(int)
+            )
             logger.info("Feature ABAIXO_MEDIA_GERAL criada")
 
         logger.info("Features compostas concluídas")
@@ -104,16 +117,18 @@ class FeatureEngineer:
         resultado = df.copy()
 
         coluna_aluno = next(
-            (c for c in ["NOME", "ALUNO", "ID_ALUNO", "ESTUDANTE"] if c in resultado.columns),
+            (
+                c
+                for c in ["NOME", "ALUNO", "ID_ALUNO", "ESTUDANTE"]
+                if c in resultado.columns
+            ),
             None,
         )
 
         if coluna_aluno and "INDE" in resultado.columns and "ANO" in resultado.columns:
             resultado = resultado.sort_values([coluna_aluno, "ANO"])
             resultado["EVOLUCAO_INDE"] = (
-                resultado.groupby(coluna_aluno)["INDE"]
-                .diff()
-                .fillna(0)
+                resultado.groupby(coluna_aluno)["INDE"].diff().fillna(0)
             )
             logger.info(
                 f"Feature EVOLUCAO_INDE criada usando agrupamento por '{coluna_aluno}'"
@@ -151,7 +166,10 @@ class FeatureEngineer:
             logger.info("Feature INDE_x_FASE criada")
 
         # Interação entre índice de bem-estar e performance
-        if "INDICE_BEMESTAR" in resultado.columns and "INDICE_PERFORMANCE" in resultado.columns:
+        if (
+            "INDICE_BEMESTAR" in resultado.columns
+            and "INDICE_PERFORMANCE" in resultado.columns
+        ):
             resultado["BEMESTAR_x_PERFORMANCE"] = (
                 resultado["INDICE_BEMESTAR"] * resultado["INDICE_PERFORMANCE"]
             )
@@ -176,8 +194,13 @@ class FeatureEngineer:
         logger.info("Selecionando features para o modelo")
 
         colunas_excluir = {
-            "DEFASAGEM", "NOME", "ALUNO", "ID_ALUNO", "ESTUDANTE",
-            "TURMA", "PONTO_DE_VIRADA",
+            "DEFASAGEM",
+            "NOME",
+            "ALUNO",
+            "ID_ALUNO",
+            "ESTUDANTE",
+            "TURMA",
+            "PONTO_DE_VIRADA",
         }
 
         # Features base numéricas
@@ -185,21 +208,28 @@ class FeatureEngineer:
 
         # Features engineered
         features_engineered = [
-            "INDICE_BEMESTAR", "INDICE_PERFORMANCE", "GAP_AUTO_REAL",
-            "ABAIXO_MEDIA_GERAL", "EVOLUCAO_INDE",
-            "INDE_x_FASE", "BEMESTAR_x_PERFORMANCE",
+            "INDICE_BEMESTAR",
+            "INDICE_PERFORMANCE",
+            "GAP_AUTO_REAL",
+            "ABAIXO_MEDIA_GERAL",
+            "EVOLUCAO_INDE",
+            "INDE_x_FASE",
+            "BEMESTAR_x_PERFORMANCE",
         ]
         features_candidatas += [c for c in features_engineered if c in df.columns]
 
         # Remover colunas excluídas e garantir que são numéricas
         features_selecionadas = [
-            c for c in features_candidatas
+            c
+            for c in features_candidatas
             if c not in colunas_excluir
             and c in df.columns
             and pd.api.types.is_numeric_dtype(df[c])
         ]
 
-        logger.info(f"Features selecionadas ({len(features_selecionadas)}): {features_selecionadas}")
+        logger.info(
+            f"Features selecionadas ({len(features_selecionadas)}): {features_selecionadas}"
+        )
         return features_selecionadas
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")  # backend não-interativo; deve ser definido antes de pyplot
 import matplotlib.pyplot as plt
 import numpy as np
@@ -67,8 +68,12 @@ class ModelEvaluator:
         logger.info("Calculando métricas de avaliação")
 
         metrics = {
-            "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
-            "f1_weighted": float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
+            "f1_macro": float(
+                f1_score(y_true, y_pred, average="macro", zero_division=0)
+            ),
+            "f1_weighted": float(
+                f1_score(y_true, y_pred, average="weighted", zero_division=0)
+            ),
             "roc_auc": float(roc_auc_score(y_true, y_proba)),
             "precision_macro": float(
                 precision_score(y_true, y_pred, average="macro", zero_division=0)
@@ -189,7 +194,9 @@ class ModelEvaluator:
         top_importances = importances[indices]
 
         fig, ax = plt.subplots(figsize=(9, max(5, top_n * 0.35)))
-        bars = ax.barh(range(len(top_features)), top_importances[::-1], color="steelblue")
+        bars = ax.barh(
+            range(len(top_features)), top_importances[::-1], color="steelblue"
+        )
         ax.set_yticks(range(len(top_features)))
         ax.set_yticklabels(top_features[::-1], fontsize=9)
         ax.set_xlabel("Importância (Gini)", fontsize=10)

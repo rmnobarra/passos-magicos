@@ -18,10 +18,24 @@ from app.main import app
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
 FEATURES_MODELO = [
-    "INDE", "IAN", "IDA", "IEG", "IAA", "IPS", "IPP", "IPV",
-    "INDICE_BEMESTAR", "INDICE_PERFORMANCE", "GAP_AUTO_REAL",
-    "ABAIXO_MEDIA_GERAL", "EVOLUCAO_INDE", "INDE_x_FASE",
-    "BEMESTAR_x_PERFORMANCE", "ANO", "FASE", "PONTO_DE_VIRADA",
+    "INDE",
+    "IAN",
+    "IDA",
+    "IEG",
+    "IAA",
+    "IPS",
+    "IPP",
+    "IPV",
+    "INDICE_BEMESTAR",
+    "INDICE_PERFORMANCE",
+    "GAP_AUTO_REAL",
+    "ABAIXO_MEDIA_GERAL",
+    "EVOLUCAO_INDE",
+    "INDE_x_FASE",
+    "BEMESTAR_x_PERFORMANCE",
+    "ANO",
+    "FASE",
+    "PONTO_DE_VIRADA",
 ]
 
 META_MOCK = {
@@ -78,6 +92,7 @@ class FakeRedis:
 def reset_redis(monkeypatch):
     """Injeta FakeRedis limpo para cada teste e reseta ao final."""
     import app.routes as routes
+
     fake = FakeRedis()
     monkeypatch.setattr(routes, "_redis", fake)
     yield
@@ -95,6 +110,7 @@ async def client():
 
 
 # ── /health ───────────────────────────────────────────────────────────────────
+
 
 async def test_health_retorna_200(client):
     response = await client.get("/api/v1/health")
@@ -121,6 +137,7 @@ async def test_health_uptime_e_numero(client):
 
 
 # ── /predict ──────────────────────────────────────────────────────────────────
+
 
 async def test_predict_retorna_200_com_payload_valido(
     client, valid_api_payload, mock_model_alto_risco
@@ -168,7 +185,9 @@ async def test_predict_alto_risco_classifica_nivel_alto(
 async def test_predict_baixo_risco_classifica_nivel_baixo(
     client, valid_api_payload, mock_model_baixo_risco
 ):
-    with patch("app.routes.get_model", return_value=(mock_model_baixo_risco, META_MOCK)):
+    with patch(
+        "app.routes.get_model", return_value=(mock_model_baixo_risco, META_MOCK)
+    ):
         response = await client.post("/api/v1/predict", json=valid_api_payload)
     assert response.json()["nivel_risco"] == "baixo"
     assert response.json()["risco_defasagem"] is False
@@ -200,14 +219,18 @@ async def test_predict_timestamp_presente(
 
 # ── Validação de input (/predict → 422) ──────────────────────────────────────
 
-@pytest.mark.parametrize("campo,valor_invalido", [
-    ("inde", 15.0),       # acima do máximo (10)
-    ("inde", -1.0),       # abaixo do mínimo (0)
-    ("fase", -1),         # fase negativa
-    ("fase", 9),          # fase acima do máximo (8)
-    ("ano", 2019),        # ano abaixo do mínimo (2020)
-    ("ian", 11.0),        # ian acima do máximo
-])
+
+@pytest.mark.parametrize(
+    "campo,valor_invalido",
+    [
+        ("inde", 15.0),  # acima do máximo (10)
+        ("inde", -1.0),  # abaixo do mínimo (0)
+        ("fase", -1),  # fase negativa
+        ("fase", 9),  # fase acima do máximo (8)
+        ("ano", 2019),  # ano abaixo do mínimo (2020)
+        ("ian", 11.0),  # ian acima do máximo
+    ],
+)
 async def test_predict_campo_invalido_retorna_422(
     client, valid_api_payload, campo, valor_invalido
 ):
@@ -232,6 +255,7 @@ async def test_predict_sem_campo_obrigatorio_retorna_422(client, valid_api_paylo
 
 # ── /metrics ──────────────────────────────────────────────────────────────────
 
+
 async def test_metrics_retorna_200(client, mock_model_alto_risco):
     with patch("app.routes.get_model", return_value=(mock_model_alto_risco, META_MOCK)):
         response = await client.get("/api/v1/metrics")
@@ -242,8 +266,12 @@ async def test_metrics_campos_obrigatorios(client, mock_model_alto_risco):
     with patch("app.routes.get_model", return_value=(mock_model_alto_risco, META_MOCK)):
         response = await client.get("/api/v1/metrics")
     body = response.json()
-    for campo in ["total_predicoes", "predicoes_alto_risco",
-                  "predicoes_baixo_risco", "modelo_versao"]:
+    for campo in [
+        "total_predicoes",
+        "predicoes_alto_risco",
+        "predicoes_baixo_risco",
+        "modelo_versao",
+    ]:
         assert campo in body
 
 
@@ -285,8 +313,10 @@ async def test_metrics_ultima_predicao_preenchida_apos_predict(
 
 # ── get_redis ─────────────────────────────────────────────────────────────────
 
+
 def test_get_redis_retorna_cliente_quando_disponivel(monkeypatch):
     import app.routes as routes
+
     monkeypatch.setattr(routes, "_redis", None)
     mock_client = MagicMock()
     mock_client.ping.return_value = True
@@ -297,6 +327,7 @@ def test_get_redis_retorna_cliente_quando_disponivel(monkeypatch):
 
 def test_get_redis_retorna_none_quando_falha(monkeypatch):
     import app.routes as routes
+
     monkeypatch.setattr(routes, "_redis", None)
     with patch("app.routes.redis_lib.from_url", side_effect=Exception("conn refused")):
         r = routes.get_redis()
@@ -305,9 +336,11 @@ def test_get_redis_retorna_none_quando_falha(monkeypatch):
 
 # ── get_model ─────────────────────────────────────────────────────────────────
 
+
 async def test_predict_sem_modelo_retorna_503(client, monkeypatch, valid_api_payload):
     import app.routes as routes
     from pathlib import Path
+
     monkeypatch.setattr(routes, "_model", None)
     monkeypatch.setattr(routes, "_metadata", None)
     monkeypatch.setattr(routes, "MODEL_PATH", Path("/nao/existe/model.joblib"))
@@ -320,6 +353,7 @@ def test_get_model_carrega_de_disco(monkeypatch, tmp_path):
     import app.routes as routes
     from pathlib import Path
     from sklearn.dummy import DummyClassifier
+
     model_path = tmp_path / "model.joblib"
     joblib.dump(DummyClassifier(), str(model_path))
     monkeypatch.setattr(routes, "_model", None)
@@ -333,6 +367,7 @@ def test_get_model_carrega_de_disco(monkeypatch, tmp_path):
 
 # ── _classificar_nivel (medio) ─────────────────────────────────────────────────
 
+
 async def test_predict_nivel_medio(client, valid_api_payload):
     mock_medio = MagicMock()
     mock_medio.predict_proba.return_value = np.array([[0.45, 0.55]])
@@ -343,8 +378,10 @@ async def test_predict_nivel_medio(client, valid_api_payload):
 
 # ── _ler_metricas_do_log ──────────────────────────────────────────────────────
 
+
 def test_ler_metricas_do_log_conta_corretamente(monkeypatch, tmp_path):
     import app.routes as routes
+
     jsonl = tmp_path / "predictions.jsonl"
     jsonl.write_text(
         '{"timestamp": "2024-01-01T00:00:00+00:00", "nivel_risco": "alto"}\n'
@@ -361,6 +398,7 @@ def test_ler_metricas_do_log_conta_corretamente(monkeypatch, tmp_path):
 
 def test_ler_metricas_do_log_sem_arquivo_retorna_zeros(monkeypatch, tmp_path):
     import app.routes as routes
+
     monkeypatch.setattr(routes, "PREDICTIONS_LOG", tmp_path / "nao_existe.jsonl")
     result = routes._ler_metricas_do_log()
     assert result["total"] == 0
@@ -368,6 +406,7 @@ def test_ler_metricas_do_log_sem_arquivo_retorna_zeros(monkeypatch, tmp_path):
 
 
 # ── Erros e fallbacks ─────────────────────────────────────────────────────────
+
 
 async def test_predict_erro_interno_retorna_500(client, valid_api_payload):
     mock_erro = MagicMock()
@@ -381,6 +420,7 @@ async def test_predict_redis_pipeline_erro_nao_quebra_resposta(
     client, valid_api_payload, monkeypatch, mock_model_alto_risco
 ):
     import app.routes as routes
+
     bad_redis = MagicMock()
     bad_redis.pipeline.return_value.execute.side_effect = Exception("pipeline falhou")
     monkeypatch.setattr(routes, "_redis", bad_redis)
@@ -393,6 +433,7 @@ async def test_metrics_fallback_jsonl_quando_redis_indisponivel(
     client, monkeypatch, tmp_path, mock_model_alto_risco
 ):
     import app.routes as routes
+
     jsonl = tmp_path / "predictions.jsonl"
     jsonl.write_text(
         '{"timestamp": "2024-01-01T00:00:00+00:00", "nivel_risco": "alto"}\n',
@@ -401,7 +442,9 @@ async def test_metrics_fallback_jsonl_quando_redis_indisponivel(
     monkeypatch.setattr(routes, "_redis", None)
     monkeypatch.setattr(routes, "PREDICTIONS_LOG", jsonl)
     with patch("app.routes.redis_lib.from_url", side_effect=Exception("sem redis")):
-        with patch("app.routes.get_model", return_value=(mock_model_alto_risco, META_MOCK)):
+        with patch(
+            "app.routes.get_model", return_value=(mock_model_alto_risco, META_MOCK)
+        ):
             response = await client.get("/api/v1/metrics")
     assert response.status_code == 200
     assert response.json()["total_predicoes"] == 1
@@ -411,6 +454,7 @@ async def test_metrics_fallback_quando_redis_falha_na_leitura(
     client, monkeypatch, tmp_path, mock_model_alto_risco
 ):
     import app.routes as routes
+
     bad_redis = MagicMock()
     bad_redis.get.side_effect = Exception("Redis timeout")
     monkeypatch.setattr(routes, "_redis", bad_redis)
@@ -423,6 +467,7 @@ async def test_metrics_fallback_quando_redis_falha_na_leitura(
 
 
 # ── Swagger / OpenAPI ─────────────────────────────────────────────────────────
+
 
 async def test_docs_swagger_disponivel(client):
     response = await client.get("/docs")

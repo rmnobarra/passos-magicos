@@ -22,7 +22,14 @@ logger = get_logger(__name__)
 
 # Colunas numéricas com indicadores educacionais (formato long)
 COLUNAS_NUMERICAS: list[str] = [
-    "INDE", "IAN", "IDA", "IEG", "IAA", "IPS", "IPP", "IPV",
+    "INDE",
+    "IAN",
+    "IDA",
+    "IEG",
+    "IAA",
+    "IPS",
+    "IPP",
+    "IPV",
 ]
 
 # Colunas categóricas esperadas (formato long)
@@ -110,12 +117,14 @@ class DataPreprocessor:
             DataFrame long com uma linha por aluno/ano.
         """
         # Detectar todos os anos presentes nas colunas
-        anos = sorted({
-            int(m.group(1))
-            for col in df.columns
-            for m in [re.search(r"_(\d{4})$", col)]
-            if m
-        })
+        anos = sorted(
+            {
+                int(m.group(1))
+                for col in df.columns
+                for m in [re.search(r"_(\d{4})$", col)]
+                if m
+            }
+        )
 
         logger.info(f"Formato wide detectado — anos encontrados: {anos}")
         frames: list[pd.DataFrame] = []
@@ -177,8 +186,7 @@ class DataPreprocessor:
 
             frames.append(pd.DataFrame(subset))
             logger.info(
-                f"Ano {ano}: {len(df)} registros extraídos "
-                f"({list(mapa.keys())})"
+                f"Ano {ano}: {len(df)} registros extraídos " f"({list(mapa.keys())})"
             )
 
         if not frames:
@@ -224,9 +232,7 @@ class DataPreprocessor:
         colunas_faltantes = SCHEMA_MINIMO - colunas_presentes
 
         if colunas_faltantes:
-            raise ValueError(
-                f"Colunas obrigatórias ausentes: {colunas_faltantes}"
-            )
+            raise ValueError(f"Colunas obrigatórias ausentes: {colunas_faltantes}")
 
         logger.info("Schema validado com sucesso")
         return True
@@ -263,7 +269,9 @@ class DataPreprocessor:
         colunas_num_presentes = [c for c in COLUNAS_NUMERICAS if c in resultado.columns]
 
         if "FASE" in resultado.columns and colunas_num_presentes:
-            self._medianas_por_fase = resultado.groupby("FASE")[colunas_num_presentes].median()
+            self._medianas_por_fase = resultado.groupby("FASE")[
+                colunas_num_presentes
+            ].median()
 
             for col in colunas_num_presentes:
                 nulos = resultado[col].isna().sum()
@@ -273,16 +281,22 @@ class DataPreprocessor:
                     )
                     # Fallback: mediana global para fases sem dados suficientes
                     resultado[col] = resultado[col].fillna(resultado[col].median())
-                    logger.info(f"Coluna '{col}': {nulos} valores imputados pela mediana por FASE")
+                    logger.info(
+                        f"Coluna '{col}': {nulos} valores imputados pela mediana por FASE"
+                    )
         else:
             for col in colunas_num_presentes:
                 nulos = resultado[col].isna().sum()
                 if nulos > 0:
                     resultado[col] = resultado[col].fillna(resultado[col].median())
-                    logger.info(f"Coluna '{col}': {nulos} valores imputados pela mediana global")
+                    logger.info(
+                        f"Coluna '{col}': {nulos} valores imputados pela mediana global"
+                    )
 
         # Imputar colunas categóricas com moda
-        colunas_cat_presentes = [c for c in COLUNAS_CATEGORICAS if c in resultado.columns]
+        colunas_cat_presentes = [
+            c for c in COLUNAS_CATEGORICAS if c in resultado.columns
+        ]
         self._modas = pd.Series(dtype=object)
 
         for col in colunas_cat_presentes:
@@ -331,8 +345,7 @@ class DataPreprocessor:
         resultado = df.copy()
 
         resultado.columns = (
-            resultado.columns
-            .str.strip()
+            resultado.columns.str.strip()
             .str.upper()
             .str.replace(r"\s+", "_", regex=True)
         )
@@ -459,7 +472,8 @@ class DataPreprocessor:
         y = df["DEFASAGEM"]
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y,
+            X,
+            y,
             test_size=test_size,
             random_state=random_state,
             stratify=y,

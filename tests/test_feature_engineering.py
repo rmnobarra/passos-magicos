@@ -14,6 +14,7 @@ from src.feature_engineering import FeatureEngineer
 
 # ── Fixtures locais ──────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def fe() -> FeatureEngineer:
     return FeatureEngineer()
@@ -23,11 +24,13 @@ def fe() -> FeatureEngineer:
 def df_preprocessed(sample_dataframe) -> pd.DataFrame:
     """sample_dataframe já processado pelo DataPreprocessor."""
     from src.preprocessing import DataPreprocessor
+
     dp = DataPreprocessor()
     return dp.fit_transform(sample_dataframe.copy())
 
 
 # ── create_composite_features ────────────────────────────────────────────────
+
 
 def test_create_composite_creates_indice_bemestar(fe, df_preprocessed):
     result = fe.create_composite_features(df_preprocessed)
@@ -52,7 +55,9 @@ def test_create_composite_creates_abaixo_media_geral(fe, df_preprocessed):
 def test_indice_bemestar_formula_correta(fe, df_preprocessed):
     """INDICE_BEMESTAR deve ser a média de IPS, IPP e IPV."""
     result = fe.create_composite_features(df_preprocessed)
-    esperado = (df_preprocessed["IPS"] + df_preprocessed["IPP"] + df_preprocessed["IPV"]) / 3
+    esperado = (
+        df_preprocessed["IPS"] + df_preprocessed["IPP"] + df_preprocessed["IPV"]
+    ) / 3
     pd.testing.assert_series_equal(
         result["INDICE_BEMESTAR"].reset_index(drop=True),
         esperado.reset_index(drop=True),
@@ -63,7 +68,9 @@ def test_indice_bemestar_formula_correta(fe, df_preprocessed):
 def test_indice_performance_formula_correta(fe, df_preprocessed):
     """INDICE_PERFORMANCE deve ser a média de IDA, IEG e IAA."""
     result = fe.create_composite_features(df_preprocessed)
-    esperado = (df_preprocessed["IDA"] + df_preprocessed["IEG"] + df_preprocessed["IAA"]) / 3
+    esperado = (
+        df_preprocessed["IDA"] + df_preprocessed["IEG"] + df_preprocessed["IAA"]
+    ) / 3
     pd.testing.assert_series_equal(
         result["INDICE_PERFORMANCE"].reset_index(drop=True),
         esperado.reset_index(drop=True),
@@ -97,6 +104,7 @@ def test_create_composite_nao_modifica_original(fe, df_preprocessed):
 
 # ── create_temporal_features ─────────────────────────────────────────────────
 
+
 def test_create_temporal_creates_evolucao_inde(fe, df_preprocessed):
     result = fe.create_temporal_features(df_preprocessed)
     assert "EVOLUCAO_INDE" in result.columns
@@ -117,6 +125,7 @@ def test_create_temporal_evolucao_inde_primeiro_ano_e_zero(fe, df_preprocessed):
 
 
 # ── create_interaction_features ──────────────────────────────────────────────
+
 
 def test_create_interaction_creates_inde_x_fase(fe, df_preprocessed):
     result = fe.create_interaction_features(df_preprocessed)
@@ -148,6 +157,7 @@ def test_create_interaction_sem_compostas_pula_bemestar_x_perf(fe, df_preprocess
 
 # ── select_features ───────────────────────────────────────────────────────────
 
+
 def test_select_features_exclui_target(fe, df_preprocessed):
     df = fe.transform(df_preprocessed)
     features = fe.select_features(df)
@@ -177,10 +187,17 @@ def test_select_features_retorna_lista(fe, df_preprocessed):
 
 # ── transform (pipeline completo) ─────────────────────────────────────────────
 
+
 def test_transform_adiciona_features_engineered(fe, df_preprocessed):
     result = fe.transform(df_preprocessed)
-    novas = {"INDICE_BEMESTAR", "INDICE_PERFORMANCE", "GAP_AUTO_REAL",
-             "ABAIXO_MEDIA_GERAL", "EVOLUCAO_INDE", "INDE_x_FASE"}
+    novas = {
+        "INDICE_BEMESTAR",
+        "INDICE_PERFORMANCE",
+        "GAP_AUTO_REAL",
+        "ABAIXO_MEDIA_GERAL",
+        "EVOLUCAO_INDE",
+        "INDE_x_FASE",
+    }
     for col in novas:
         assert col in result.columns, f"Feature '{col}' não foi criada"
 
@@ -202,9 +219,15 @@ def test_transform_nao_modifica_original(fe, df_preprocessed):
     assert df_preprocessed.shape[1] == n_cols_antes
 
 
-@pytest.mark.parametrize("feature", [
-    "INDICE_BEMESTAR", "INDICE_PERFORMANCE", "GAP_AUTO_REAL", "EVOLUCAO_INDE",
-])
+@pytest.mark.parametrize(
+    "feature",
+    [
+        "INDICE_BEMESTAR",
+        "INDICE_PERFORMANCE",
+        "GAP_AUTO_REAL",
+        "EVOLUCAO_INDE",
+    ],
+)
 def test_transform_feature_sem_nulos(fe, df_preprocessed, feature):
     result = fe.transform(df_preprocessed)
     assert result[feature].isna().sum() == 0, f"{feature} contém NaN"

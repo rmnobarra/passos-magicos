@@ -16,21 +16,23 @@ def sample_dataframe() -> pd.DataFrame:
     np.random.seed(42)
     n = 150
 
-    df = pd.DataFrame({
-        "NOME": [f"ESTUDANTE_{i:03d}" for i in range(n)],
-        "ANO": np.random.choice([2022, 2023, 2024], n),
-        "FASE": np.random.randint(0, 9, n),
-        "TURMA": np.random.choice(["A", "B", "C", "D"], n),
-        "INDE": np.random.uniform(2.0, 10.0, n),
-        "IAN": np.random.uniform(2.0, 10.0, n),
-        "IDA": np.random.uniform(2.0, 10.0, n),
-        "IEG": np.random.uniform(2.0, 10.0, n),
-        "IAA": np.random.uniform(2.0, 10.0, n),
-        "IPS": np.random.uniform(2.0, 10.0, n),
-        "IPP": np.random.uniform(2.0, 10.0, n),
-        "IPV": np.random.uniform(2.0, 10.0, n),
-        "PONTO_DE_VIRADA": np.random.choice([0, 1], n),
-    })
+    df = pd.DataFrame(
+        {
+            "NOME": [f"ESTUDANTE_{i:03d}" for i in range(n)],
+            "ANO": np.random.choice([2022, 2023, 2024], n),
+            "FASE": np.random.randint(0, 9, n),
+            "TURMA": np.random.choice(["A", "B", "C", "D"], n),
+            "INDE": np.random.uniform(2.0, 10.0, n),
+            "IAN": np.random.uniform(2.0, 10.0, n),
+            "IDA": np.random.uniform(2.0, 10.0, n),
+            "IEG": np.random.uniform(2.0, 10.0, n),
+            "IAA": np.random.uniform(2.0, 10.0, n),
+            "IPS": np.random.uniform(2.0, 10.0, n),
+            "IPP": np.random.uniform(2.0, 10.0, n),
+            "IPV": np.random.uniform(2.0, 10.0, n),
+            "PONTO_DE_VIRADA": np.random.choice([0, 1], n),
+        }
+    )
 
     # Target binário derivado das regras de negócio
     df["DEFASAGEM"] = ((df["INDE"] < 5.0) | (df["IAN"] < 5.0)).astype(int)
@@ -53,34 +55,36 @@ def wide_dataframe() -> pd.DataFrame:
     """DataFrame no formato wide (colunas sufixadas por ano) para testar reshape."""
     np.random.seed(7)
     n = 20
-    df = pd.DataFrame({
-        "NOME": [f"EST_{i:03d}" for i in range(n)],
-        # 2021
-        "INDE_2021": np.random.uniform(4.0, 9.0, n),
-        "IAN_2021": np.random.uniform(4.0, 9.0, n),
-        "IDA_2021": np.random.uniform(4.0, 9.0, n),
-        "IEG_2021": np.random.uniform(4.0, 9.0, n),
-        "IAA_2021": np.random.uniform(4.0, 9.0, n),
-        "IPS_2021": np.random.uniform(4.0, 9.0, n),
-        "IPP_2021": np.random.uniform(4.0, 9.0, n),
-        "IPV_2021": np.random.uniform(4.0, 9.0, n),
-        "FASE_2021": np.random.randint(1, 8, n).astype(float),
-        "TURMA_2021": np.random.choice(["A", "B"], n),
-        "PONTO_VIRADA_2021": np.random.choice(["Sim", "Não"], n),
-        "DEFASAGEM_2021": np.random.choice([-2, -1, 0, 1], n),
-        # 2022
-        "INDE_2022": np.random.uniform(4.0, 9.0, n),
-        "IAN_2022": np.random.uniform(4.0, 9.0, n),
-        "IDA_2022": np.random.uniform(4.0, 9.0, n),
-        "IEG_2022": np.random.uniform(4.0, 9.0, n),
-        "IAA_2022": np.random.uniform(4.0, 9.0, n),
-        "IPS_2022": np.random.uniform(4.0, 9.0, n),
-        "IPP_2022": np.random.uniform(4.0, 9.0, n),
-        "IPV_2022": np.random.uniform(4.0, 9.0, n),
-        "FASE_2022": np.random.randint(1, 8, n).astype(float),
-        "TURMA_2022": np.random.choice(["A", "B"], n),
-        "PONTO_VIRADA_2022": np.random.choice(["Sim", "Não"], n),
-    })
+    df = pd.DataFrame(
+        {
+            "NOME": [f"EST_{i:03d}" for i in range(n)],
+            # 2021
+            "INDE_2021": np.random.uniform(4.0, 9.0, n),
+            "IAN_2021": np.random.uniform(4.0, 9.0, n),
+            "IDA_2021": np.random.uniform(4.0, 9.0, n),
+            "IEG_2021": np.random.uniform(4.0, 9.0, n),
+            "IAA_2021": np.random.uniform(4.0, 9.0, n),
+            "IPS_2021": np.random.uniform(4.0, 9.0, n),
+            "IPP_2021": np.random.uniform(4.0, 9.0, n),
+            "IPV_2021": np.random.uniform(4.0, 9.0, n),
+            "FASE_2021": np.random.randint(1, 8, n).astype(float),
+            "TURMA_2021": np.random.choice(["A", "B"], n),
+            "PONTO_VIRADA_2021": np.random.choice(["Sim", "Não"], n),
+            "DEFASAGEM_2021": np.random.choice([-2, -1, 0, 1], n),
+            # 2022
+            "INDE_2022": np.random.uniform(4.0, 9.0, n),
+            "IAN_2022": np.random.uniform(4.0, 9.0, n),
+            "IDA_2022": np.random.uniform(4.0, 9.0, n),
+            "IEG_2022": np.random.uniform(4.0, 9.0, n),
+            "IAA_2022": np.random.uniform(4.0, 9.0, n),
+            "IPS_2022": np.random.uniform(4.0, 9.0, n),
+            "IPP_2022": np.random.uniform(4.0, 9.0, n),
+            "IPV_2022": np.random.uniform(4.0, 9.0, n),
+            "FASE_2022": np.random.randint(1, 8, n).astype(float),
+            "TURMA_2022": np.random.choice(["A", "B"], n),
+            "PONTO_VIRADA_2022": np.random.choice(["Sim", "Não"], n),
+        }
+    )
     return df
 
 
@@ -136,9 +140,9 @@ def y_arrays():
     # Introduzir ~10% de erros propositais para métricas não triviais
     flip_idx = np.random.choice(n, size=int(n * 0.10), replace=False)
     y_pred[flip_idx] = 1 - y_pred[flip_idx]
-    y_proba = np.where(y_pred == 1,
-                       np.random.uniform(0.55, 0.99, n),
-                       np.random.uniform(0.01, 0.45, n))
+    y_proba = np.where(
+        y_pred == 1, np.random.uniform(0.55, 0.99, n), np.random.uniform(0.01, 0.45, n)
+    )
     return y_true, y_pred, y_proba
 
 
@@ -147,10 +151,17 @@ def valid_api_payload() -> dict:
     """Payload válido para o endpoint POST /predict."""
     return {
         "student_id": "TEST-001",
-        "inde": 6.5, "ian": 7.2, "ida": 5.8,
-        "ieg": 6.0, "iaa": 7.5, "ips": 6.8,
-        "ipp": 7.1, "ipv": 6.3, "fase": 3,
-        "ano": 2024, "ponto_de_virada": False,
+        "inde": 6.5,
+        "ian": 7.2,
+        "ida": 5.8,
+        "ieg": 6.0,
+        "iaa": 7.5,
+        "ips": 6.8,
+        "ipp": 7.1,
+        "ipv": 6.3,
+        "fase": 3,
+        "ano": 2024,
+        "ponto_de_virada": False,
     }
 
 
@@ -158,8 +169,15 @@ def valid_api_payload() -> dict:
 def high_risk_payload() -> dict:
     """Payload com indicadores baixos, esperado classificar como alto risco."""
     return {
-        "inde": 2.5, "ian": 2.8, "ida": 3.0,
-        "ieg": 3.5, "iaa": 4.0, "ips": 3.2,
-        "ipp": 3.8, "ipv": 2.9, "fase": 1,
-        "ano": 2024, "ponto_de_virada": False,
+        "inde": 2.5,
+        "ian": 2.8,
+        "ida": 3.0,
+        "ieg": 3.5,
+        "iaa": 4.0,
+        "ips": 3.2,
+        "ipp": 3.8,
+        "ipv": 2.9,
+        "fase": 1,
+        "ano": 2024,
+        "ponto_de_virada": False,
     }

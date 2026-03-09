@@ -17,6 +17,7 @@ from src.preprocessing import DataPreprocessor, SCHEMA_MINIMO
 
 # ── Fixtures locais ──────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def dp() -> DataPreprocessor:
     return DataPreprocessor()
@@ -31,6 +32,7 @@ def csv_file(tmp_path, sample_dataframe) -> str:
 
 
 # ── load_data ────────────────────────────────────────────────────────────────
+
 
 def test_load_data_success(dp, csv_file):
     df = dp.load_data(csv_file)
@@ -49,6 +51,7 @@ def test_load_data_preserves_row_count(dp, csv_file, sample_dataframe):
 
 
 # ── normalize_column_names ────────────────────────────────────────────────────
+
 
 def test_normalize_column_names_converts_to_uppercase(dp):
     df = pd.DataFrame({"nome": [1], "inde": [2]})
@@ -71,6 +74,7 @@ def test_normalize_column_names_does_not_modify_original(dp, sample_dataframe):
 
 # ── validate_schema ───────────────────────────────────────────────────────────
 
+
 def test_validate_schema_success(dp, sample_dataframe):
     assert dp.validate_schema(sample_dataframe) is True
 
@@ -89,6 +93,7 @@ def test_validate_schema_cada_coluna_obrigatoria(dp, sample_dataframe, coluna_re
 
 
 # ── handle_missing_values ────────────────────────────────────────────────────
+
 
 def test_handle_missing_values_sem_nulos_retorna_mesmo_tamanho(dp, sample_dataframe):
     result = dp.handle_missing_values(sample_dataframe)
@@ -112,7 +117,7 @@ def test_handle_missing_values_remove_linhas_muito_vazias(dp, sample_dataframe):
     df = sample_dataframe.copy()
     # Linha com >50% de NaN
     num_cols = sample_dataframe.select_dtypes(include="number").columns
-    df.loc[0, num_cols[:len(num_cols) // 2 + 2]] = np.nan
+    df.loc[0, num_cols[: len(num_cols) // 2 + 2]] = np.nan
     result = dp.handle_missing_values(df)
     assert len(result) < len(df) or result.isna().sum().sum() == 0
 
@@ -125,8 +130,11 @@ def test_handle_missing_values_nao_modifica_original(dp, sample_dataframe_with_m
 
 # ── remove_duplicates ────────────────────────────────────────────────────────
 
+
 def test_remove_duplicates_elimina_linhas_iguais(dp, sample_dataframe):
-    df_com_dup = pd.concat([sample_dataframe, sample_dataframe.iloc[:5]], ignore_index=True)
+    df_com_dup = pd.concat(
+        [sample_dataframe, sample_dataframe.iloc[:5]], ignore_index=True
+    )
     result = dp.remove_duplicates(df_com_dup)
     assert len(result) == len(sample_dataframe)
 
@@ -137,13 +145,16 @@ def test_remove_duplicates_sem_duplicatas_mantem_tamanho(dp, sample_dataframe):
 
 
 def test_remove_duplicates_nao_modifica_original(dp, sample_dataframe):
-    df_com_dup = pd.concat([sample_dataframe, sample_dataframe.iloc[:3]], ignore_index=True)
+    df_com_dup = pd.concat(
+        [sample_dataframe, sample_dataframe.iloc[:3]], ignore_index=True
+    )
     n_antes = len(df_com_dup)
     dp.remove_duplicates(df_com_dup)
     assert len(df_com_dup) == n_antes
 
 
 # ── encode_target ─────────────────────────────────────────────────────────────
+
 
 def test_encode_target_preserva_binario_existente(dp, sample_dataframe):
     result = dp.encode_target(sample_dataframe)
@@ -180,6 +191,7 @@ def test_encode_target_tipo_inteiro(dp, sample_dataframe):
 
 # ── split_data ───────────────────────────────────────────────────────────────
 
+
 def test_split_data_proporcao_80_20(dp, sample_dataframe):
     X_train, X_test, y_train, y_test = dp.split_data(sample_dataframe, test_size=0.2)
     total = len(X_train) + len(X_test)
@@ -205,6 +217,7 @@ def test_split_data_retorna_quatro_elementos(dp, sample_dataframe):
 
 
 # ── wide → long ──────────────────────────────────────────────────────────────
+
 
 def test_is_wide_format_detecta_sufixo_ano(dp, wide_dataframe):
     assert dp._is_wide_format(wide_dataframe) is True
@@ -239,6 +252,7 @@ def test_reshape_wide_to_long_converte_tipos_numericos(dp, wide_dataframe):
 
 
 # ── fit_transform (pipeline completo) ────────────────────────────────────────
+
 
 def test_fit_transform_retorna_dataframe(dp, sample_dataframe):
     result = dp.fit_transform(sample_dataframe)

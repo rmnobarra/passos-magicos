@@ -16,6 +16,7 @@ from src.evaluate import ModelEvaluator
 
 # ── Fixtures locais ──────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def evaluator() -> ModelEvaluator:
     return ModelEvaluator()
@@ -53,13 +54,19 @@ def metrics_ruins() -> dict:
 
 # ── compute_metrics ───────────────────────────────────────────────────────────
 
+
 def test_compute_metrics_retorna_todas_as_chaves(evaluator, y_arrays):
     y_true, y_pred, y_proba = y_arrays
     metrics = evaluator.compute_metrics(y_true, y_pred, y_proba)
     for chave in [
-        "f1_macro", "f1_weighted", "roc_auc",
-        "precision_macro", "recall_macro", "recall_positiva",
-        "confusion_matrix", "classification_report",
+        "f1_macro",
+        "f1_weighted",
+        "roc_auc",
+        "precision_macro",
+        "recall_macro",
+        "recall_positiva",
+        "confusion_matrix",
+        "classification_report",
     ]:
         assert chave in metrics, f"Chave '{chave}' ausente em compute_metrics"
 
@@ -100,6 +107,7 @@ def test_compute_metrics_recall_positiva_entre_0_e_1(evaluator, y_arrays):
 
 # ── is_model_reliable ─────────────────────────────────────────────────────────
 
+
 def test_is_model_reliable_retorna_true_com_metricas_boas(evaluator, metrics_bons):
     assert evaluator.is_model_reliable(metrics_bons) is True
 
@@ -108,12 +116,17 @@ def test_is_model_reliable_retorna_false_com_metricas_ruins(evaluator, metrics_r
     assert evaluator.is_model_reliable(metrics_ruins) is False
 
 
-@pytest.mark.parametrize("campo,valor_ruim", [
-    ("f1_macro", 0.69),
-    ("roc_auc", 0.74),
-    ("recall_positiva", 0.64),
-])
-def test_is_model_reliable_falha_por_criterio(evaluator, metrics_bons, campo, valor_ruim):
+@pytest.mark.parametrize(
+    "campo,valor_ruim",
+    [
+        ("f1_macro", 0.69),
+        ("roc_auc", 0.74),
+        ("recall_positiva", 0.64),
+    ],
+)
+def test_is_model_reliable_falha_por_criterio(
+    evaluator, metrics_bons, campo, valor_ruim
+):
     """Qualquer critério abaixo do mínimo deve reprovar o modelo."""
     metrics = metrics_bons.copy()
     metrics[campo] = valor_ruim
@@ -130,6 +143,7 @@ def test_is_model_reliable_limiar_exato_aprovado(evaluator, metrics_bons):
 
 
 # ── generate_report ───────────────────────────────────────────────────────────
+
 
 def test_generate_report_cria_arquivo(evaluator, metrics_bons, tmp_path):
     path = str(tmp_path / "relatorio.txt")
@@ -166,6 +180,7 @@ def test_generate_report_contem_status_producao(evaluator, metrics_bons, tmp_pat
 
 # ── plot_confusion_matrix ──────────────────────────────────────────────────────
 
+
 def test_plot_confusion_matrix_cria_arquivo_png(evaluator, y_arrays, tmp_path):
     y_true, y_pred, _ = y_arrays
     path = str(tmp_path / "cm.png")
@@ -176,6 +191,7 @@ def test_plot_confusion_matrix_cria_arquivo_png(evaluator, y_arrays, tmp_path):
 
 # ── plot_roc_curve ────────────────────────────────────────────────────────────
 
+
 def test_plot_roc_curve_cria_arquivo_png(evaluator, y_arrays, tmp_path):
     y_true, _, y_proba = y_arrays
     path = str(tmp_path / "roc.png")
@@ -185,6 +201,7 @@ def test_plot_roc_curve_cria_arquivo_png(evaluator, y_arrays, tmp_path):
 
 
 # ── plot_feature_importance ───────────────────────────────────────────────────
+
 
 def test_plot_feature_importance_cria_arquivo_png(evaluator, tmp_path):
     model = MagicMock()

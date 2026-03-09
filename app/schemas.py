@@ -15,9 +15,9 @@ from pydantic import BaseModel, Field
 class NivelRisco(str, Enum):
     """Classificação do nível de risco de defasagem escolar."""
 
-    baixo = "baixo"   # probabilidade < 0.40
-    medio = "medio"   # probabilidade 0.40–0.70
-    alto = "alto"     # probabilidade > 0.70
+    baixo = "baixo"  # probabilidade < 0.40
+    medio = "medio"  # probabilidade 0.40–0.70
+    alto = "alto"  # probabilidade > 0.70
 
 
 class PredictionRequest(BaseModel):
@@ -28,43 +28,63 @@ class PredictionRequest(BaseModel):
         description="Identificador opcional do estudante",
     )
     inde: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Índice de Desenvolvimento Educacional (0–10)",
     )
     ian: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Indicador de Adequação de Nível (0–10)",
     )
     ida: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Indicador de Desempenho Acadêmico (0–10)",
     )
     ieg: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Indicador de Engajamento (0–10)",
     )
     iaa: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Indicador de Autoavaliação (0–10)",
     )
     ips: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Indicador Psicossocial (0–10)",
     )
     ipp: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Indicador Psicopedagógico (0–10)",
     )
     ipv: float = Field(
-        ..., ge=0.0, le=10.0,
+        ...,
+        ge=0.0,
+        le=10.0,
         description="Indicador de Ponto de Virada (0–10)",
     )
     fase: int = Field(
-        ..., ge=0, le=8,
+        ...,
+        ge=0,
+        le=8,
         description="Fase educacional do estudante (0–8)",
     )
     ano: int = Field(
-        ..., ge=2020, le=2030,
+        ...,
+        ge=2020,
+        le=2030,
         description="Ano letivo de referência",
     )
     ponto_de_virada: bool = Field(
@@ -104,7 +124,9 @@ class PredictionResponse(BaseModel):
         description="True se o modelo classifica o estudante em risco",
     )
     probabilidade: float = Field(
-        ..., ge=0.0, le=1.0,
+        ...,
+        ge=0.0,
+        le=1.0,
         description="Probabilidade estimada de risco (0.0–1.0)",
     )
     nivel_risco: NivelRisco = Field(
