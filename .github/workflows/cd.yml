@@ -1,7 +1,9 @@
 name: CD — Deploy na Render
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI — Build & Test"]   # aguarda CI concluir
+    types: [completed]
     branches: [main]
 
 # Garante que apenas um deploy rode por vez
@@ -14,6 +16,9 @@ jobs:
     name: Deploy para Render
     runs-on: ubuntu-latest
     environment: production   # proteção de ambiente no GitHub
+
+    # Só executa se o CI passou com sucesso
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +55,8 @@ jobs:
             exit 1
           fi
 
-          DEPLOY_ID=$(echo "$BODY" | python3 -c "import sys,json; print(json.load(sys.stdin)['deploy']['id'])")
+          # A Render API retorna o objeto deploy na raiz (não aninhado em {'deploy': ...})
+          DEPLOY_ID=$(echo "$BODY" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
           echo "deploy_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
           echo "✅ Deploy iniciado — ID: $DEPLOY_ID"
 
@@ -66,7 +72,7 @@ jobs:
             STATUS=$(curl -s \
               -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
               "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys/$DEPLOY_ID" \
-              | python3 -c "import sys,json; print(json.load(sys.stdin)['deploy']['status'])")
+              | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
 
             echo "  Tentativa $((ATTEMPT+1))/$MAX_ATTEMPTS — Status: $STATUS"
 
@@ -113,7 +119,7 @@ jobs:
           if [ "${{ job.status }}" = "success" ]; then
             echo "### ✅ Deploy realizado com sucesso!" >> $GITHUB_STEP_SUMMARY
             echo "- **Ambiente:** Production" >> $GITHUB_STEP_SUMMARY
-            echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Commit:** \`${{ github.event.workflow_run.head_sha }}\`" >> $GITHUB_STEP_SUMMARY
             echo "- **URL:** ${{ secrets.RENDER_SERVICE_URL }}" >> $GITHUB_STEP_SUMMARY
           else
             echo "### ❌ Deploy falhou" >> $GITHUB_STEP_SUMMARY
