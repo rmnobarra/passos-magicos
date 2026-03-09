@@ -27,6 +27,10 @@ COPY monitoring/ ./monitoring/
 # Criar diretórios necessários
 RUN mkdir -p logs app/model data/processed reports/figures
 
+# Copiar e habilitar script de inicialização
+COPY app/render_startup.sh /app/render_startup.sh
+RUN chmod +x /app/render_startup.sh
+
 # Variável de ambiente para PATH
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -35,8 +39,9 @@ ENV APP_ENV=production
 
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Health check com start_period maior para acomodar treino inicial se necessário
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# Startup script: verifica modelo, treina se ausente, sobe uvicorn
+CMD ["/app/render_startup.sh"]

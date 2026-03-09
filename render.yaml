@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: passos-magicos-api
+    runtime: docker              # usa o Dockerfile do projeto
+    region: oregon               # us-west-2 (opção free tier)
+    plan: free                   # plano gratuito (starter em produção real)
+    branch: main
+
+    # Dockerfile na raiz do projeto
+    dockerfilePath: ./Dockerfile
+
+    # Porta exposta pelo container
+    port: 8000
+
+    # Variáveis de ambiente
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: MODEL_PATH
+        value: /app/app/model/model.joblib
+      - key: METADATA_PATH
+        value: /app/app/model/metadata.joblib
+
+    # Disco persistente para armazenar o modelo treinado
+    # IMPORTANTE: o modelo precisa persistir entre deploys
+    disk:
+      name: model-storage
+      mountPath: /app/app/model
+      sizeGB: 1                  # 1 GB é suficiente para o joblib
+
+    # Health check — Render reinicia o container se falhar
+    healthCheckPath: /api/v1/health
+
+    # Auto-deploy ao fazer push na branch main
+    autoDeploy: false            # controlado pelo GitHub Actions CD
