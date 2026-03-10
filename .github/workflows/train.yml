@@ -49,7 +49,7 @@ jobs:
           python -c "
           import joblib
           meta = joblib.load('app/model/metadata.joblib')
-          f1 = meta['metrics'].get('test_f1_macro', 0)
+          f1 = meta['test_metrics'].get('test_f1_macro', 0)
           algo = meta.get('algorithm', 'N/A')
           print(f'Algoritmo : {algo}')
           print(f'F1 macro  : {f1:.4f}')
