@@ -6,6 +6,8 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?logo=fastapi&logoColor=white)
 ![LightGBM](https://img.shields.io/badge/modelo-LGBMClassifier-F5A623)
 ![Redis](https://img.shields.io/badge/cache-Redis_7-DC382D?logo=redis&logoColor=white)
+![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
+![Render](https://img.shields.io/badge/deploy-Render-46E3B7?logo=render&logoColor=white)
 
 Sistema completo de Machine Learning para identificar estudantes em **risco de defasagem escolar** atendidos pela [Associação Passos Mágicos](https://passosmagicos.org.br/). Cobre todo o ciclo de vida do modelo: ingestão de dados, treinamento, avaliação, API de inferência em tempo real e monitoramento de drift.
 
@@ -19,9 +21,11 @@ Sistema completo de Machine Learning para identificar estudantes em **risco de d
 4. [Métricas e Justificativa do Modelo](#métricas-e-justificativa-do-modelo)
 5. [Deploy Local](#deploy-local)
 6. [Deploy com Docker](#deploy-com-docker)
-7. [API — Exemplos de uso](#api--exemplos-de-uso)
-8. [Testes](#testes)
-9. [Monitoramento](#monitoramento)
+7. [Deploy na Render (Cloud)](#deploy-na-render-cloud)
+8. [CI/CD — GitHub Actions](#cicd--github-actions)
+9. [API — Exemplos de uso](#api--exemplos-de-uso)
+10. [Testes](#testes)
+11. [Monitoramento](#monitoramento)
 
 ---
 
@@ -65,6 +69,12 @@ passos-magicos/
 │   ├── test_train.py
 │   ├── test_evaluate.py
 │   └── test_api.py
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml              # CI: lint + test + docker build
+│   │   ├── cd.yml              # CD: deploy automático na Render
+│   │   └── train.yml           # Retreinamento agendado (segunda 06:00 UTC)
+│   └── pull_request_template.md
 ├── data/
 │   ├── raw/                    # Dataset original (não versionado)
 │   └── processed/              # Dados processados
@@ -76,6 +86,7 @@ passos-magicos/
 │   └── predictions.jsonl       # Log de predições (append-only)
 ├── Dockerfile
 ├── docker-compose.yml
+├── render.yaml                 # Infrastructure as Code — Render
 ├── requirements.txt
 └── .env.example
 ```
@@ -275,6 +286,133 @@ Para remover também os volumes (apaga dados do Redis):
 docker-compose down -v
 ```
 
+---
+
+## Deploy na Render (Cloud)
+
+A API está configurada para deploy automático na [Render](https://render.com) via `render.yaml` (Infrastructure as Code).
+
+### Arquitetura
+
+```
+GitHub push (main)
+    ↓
+GitHub Actions CI  →  lint + test + docker build
+    ↓ (CI verde)
+GitHub Actions CD  →  Render API → aguarda deploy → health check
+    ↓
+Render Web Service (Docker)
+    ├── Persistent Disk: /app/app/model  (modelo entre deploys)
+    ├── Health Check:    GET /api/v1/health
+    └── URL pública:     https://<seu-servico>.onrender.com
+```
+
+### Configuração do serviço (`render.yaml`)
+
+| Campo | Valor |
+|-------|-------|
+| Runtime | Docker (usa o `Dockerfile` do repo) |
+| Porta | 8000 |
+| Disco persistente | `/app/app/model` — 1 GB |
+| Health check | `/api/v1/health` |
+| Auto-deploy | `false` — controlado pelo GitHub Actions |
+
+### Primeiro deploy — modelo automático
+
+No primeiro deploy o disco persistente está vazio. O `app/render_startup.sh` detecta isso e **treina automaticamente** um modelo com dados sintéticos antes de subir a API:
+
+```
+render_startup.sh
+    ↓ MODEL_PATH não existe
+    ↓ gera 500 registros sintéticos
+    ↓ python src/train.py --data synthetic_data.csv
+    ↓ modelo salvo em /app/app/model/
+    ↓ exec uvicorn app.main:app ...
+```
+
+Para usar o modelo real treinado localmente, copie os arquivos via Render Shell:
+
+```bash
+# No dashboard Render → Shell do serviço
+cp /tmp/model.joblib    /app/app/model/model.joblib
+cp /tmp/metadata.joblib /app/app/model/metadata.joblib
+```
+
+### Secrets necessários no GitHub
+
+Configure em **Settings → Secrets and variables → Actions**:
+
+| Secret | Descrição | Onde obter |
+|--------|-----------|-----------|
+| `RENDER_API_KEY` | Chave da API da Render | Render → Account Settings → API Keys |
+| `RENDER_SERVICE_ID` | ID do serviço | URL: `https://dashboard.render.com/web/srv-XXXX` |
+| `RENDER_SERVICE_URL` | URL pública da API | Ex: `https://passos-magicos-api.onrender.com` |
+
+> **Plano Free:** o serviço hiberna após 15 min de inatividade. A primeira requisição após hibernação leva ~30s para responder (cold start). Para produção contínua, use o plano Starter (USD 7/mês).
+
+---
+
+## CI/CD — GitHub Actions
+
+### Pipeline completa
+
+```
+feature-branch  →  PR para main
+                        ↓
+              CI: lint → test → docker build
+                        ↓ (aprovado)
+                   merge para main
+                        ↓
+              CD: deploy na Render → health check
+```
+
+### `ci.yml` — Integração Contínua
+
+Dispara em **push e pull_request** para `main` e `develop`:
+
+| Job | O que faz |
+|-----|-----------|
+| `lint` | `black --check` + `flake8` (max-line-length=100) |
+| `test` | Gera dados sintéticos → treina modelo → `pytest --cov-fail-under=80` + upload Codecov |
+| `docker-build` | Build da imagem Docker com cache GHA (sem push) |
+
+### `cd.yml` — Entrega Contínua
+
+Dispara via `workflow_run` apenas quando o CI conclui com **sucesso** na branch `main`:
+
+1. Verifica secrets obrigatórios
+2. Dispara deploy via `POST /v1/services/{id}/deploys`
+3. Polling do status a cada 20s (timeout: 10 min)
+4. Health check no endpoint `/api/v1/health` (10 tentativas × 15s)
+5. Publica resumo no GitHub Step Summary
+
+### `train.yml` — Retreinamento Agendado
+
+Executa toda **segunda-feira às 06:00 UTC** (ou via disparo manual):
+
+```bash
+# Disparo manual pelo GitHub UI ou CLI
+gh workflow run train.yml
+
+# Com dataset específico
+gh workflow run train.yml -f data_path=data/raw/novos_dados.csv
+```
+
+O workflow valida que o novo modelo atinge **F1 ≥ 0.70** antes de commitar.
+
+### Comandos úteis
+
+```bash
+# Ver status dos workflows
+gh workflow list
+gh run list --workflow=ci.yml
+
+# Logs do último deploy
+gh run view --log
+```
+
+---
+
 ### Kubernetes
 
 A API é **stateless** por design:
@@ -466,3 +604,4 @@ Copie `.env.example` para `.env` e ajuste conforme necessário:
 ---
 
 *Desenvolvido para o Datathon Passos Mágicos — FIAP 2024/2025*
+

@@ -25,13 +25,6 @@ services:
       - key: METADATA_PATH
         value: /app/app/model/metadata.joblib
 
-    # Disco persistente para armazenar o modelo treinado
-    # IMPORTANTE: o modelo precisa persistir entre deploys
-    disk:
-      name: model-storage
-      mountPath: /app/app/model
-      sizeGB: 1                  # 1 GB é suficiente para o joblib
-
     # Health check — Render reinicia o container se falhar
     healthCheckPath: /api/v1/health
 

@@ -10,12 +10,15 @@ build/
 venv/
 env/
 
-# Dados (nunca versionar dados brutos)
-data/raw/
+# Dados processados (nunca versionar)
 data/processed/
 
-# Modelos serializados (grandes demais para git)
-app/model/*.joblib
+# Dataset bruto — apenas o arquivo oficial é rastreado
+data/raw/*
+!data/raw/PEDE_PASSOS_DATASET_FIAP.csv
+
+# Modelos serializados — rastreados no git para deploy na Render
+# app/model/*.joblib
 app/model/*.pkl
 
 # Variáveis de ambiente

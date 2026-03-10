@@ -1,19 +1,31 @@
-name: Retreinamento Agendado do Modelo
+name: Retreinamento do Modelo
 
 on:
+  push:
+    branches: [main]
+    paths:                              # só treina quando ML ou dados mudam
+      - 'src/**'
+      - 'data/raw/**'
   schedule:
-    - cron: '0 6 * * 1'   # toda segunda-feira às 06:00 UTC
-  workflow_dispatch:        # permite disparo manual pelo GitHub UI
+    - cron: '0 6 * * 1'               # toda segunda-feira às 06:00 UTC
+  workflow_dispatch:
     inputs:
       data_path:
         description: 'Caminho do CSV de dados'
         required: false
         default: 'data/raw/PEDE_PASSOS_DATASET_FIAP.csv'
 
+# Permissão para commitar o modelo de volta ao repo
+permissions:
+  contents: write
+
 jobs:
   retrain:
     name: Retreinar e avaliar modelo
     runs-on: ubuntu-latest
+
+    # Não executa se o commit foi feito pelo próprio bot (evita loop)
+    if: github.actor != 'github-actions[bot]'
 
     steps:
       - uses: actions/checkout@v4
@@ -23,28 +35,34 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - run: pip install -r requirements.txt
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
 
-      - name: Treinar modelo
+      - name: Treinar modelo com dados reais
         run: |
           DATA_PATH="${{ github.event.inputs.data_path || 'data/raw/PEDE_PASSOS_DATASET_FIAP.csv' }}"
+          echo "📊 Treinando com: $DATA_PATH"
           python src/train.py --data "$DATA_PATH"
 
-      - name: Verificar qualidade do novo modelo
+      - name: Verificar qualidade do modelo
         run: |
           python -c "
-          import joblib, json
+          import joblib
           meta = joblib.load('app/model/metadata.joblib')
           f1 = meta['metrics'].get('test_f1_macro', 0)
-          print(f'F1-Score: {f1:.4f}')
+          algo = meta.get('algorithm', 'N/A')
+          print(f'Algoritmo : {algo}')
+          print(f'F1 macro  : {f1:.4f}')
           assert f1 >= 0.70, f'Modelo abaixo do limiar mínimo (F1={f1:.4f} < 0.70)'
           print('✅ Modelo aprovado para deploy')
           "
 
-      - name: Commit do novo modelo
+      - name: Commitar modelo treinado
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add app/model/
-          git commit -m "chore: modelo retreinado em $(date +'%Y-%m-%d') [skip ci]" || echo "Sem alterações"
+          git add app/model/model.joblib app/model/metadata.joblib
+          git diff --cached --quiet && echo "Modelo sem alterações, nada a commitar." && exit 0
+          git commit -m "chore: modelo retreinado em $(date +'%Y-%m-%d') [skip ci]"
           git push
+          echo "✅ Modelo commitado — CD será disparado automaticamente"

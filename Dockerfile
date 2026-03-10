@@ -39,8 +39,7 @@ ENV APP_ENV=production
 
 EXPOSE 8000
 
-# Health check com start_period maior para acomodar treino inicial se necessário
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')" || exit 1
 
 # Startup script: verifica modelo, treina se ausente, sobe uvicorn

@@ -2,7 +2,9 @@ name: CD — Deploy na Render
 
 on:
   workflow_run:
-    workflows: ["CI — Build & Test"]   # aguarda CI concluir
+    workflows:
+      - "CI — Build & Test"       # deploy em mudanças de código
+      - "Retreinamento do Modelo" # deploy após treino com dados reais
     types: [completed]
     branches: [main]
 
